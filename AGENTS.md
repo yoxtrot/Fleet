@@ -33,7 +33,7 @@ Invoke with `@skill-name` or by describing the matching task (for example “hel
 ## Useful file map
 
 - `src/app/` — auth provider, shell, router, route guards
-- `src/features/auth|vehicles|maintenance|research|dashboard/` — feature UI + API helpers
+- `src/features/auth|vehicles|projects|maintenance|research|dashboard/` — feature UI + API helpers
 - `src/lib/supabase.ts` — browser Supabase client (anon key only)
 - `supabase/migrations/` — SQL schema + RLS policies
 - `docs/` — human setup and coding philosophy

@@ -24,6 +24,10 @@ const config: StorybookConfig = {
         storybookDir,
         './mocks/researchApi.ts',
       ),
+      [path.resolve(storybookDir, '../src/features/projects/projectsApi.ts')]: path.resolve(
+        storybookDir,
+        './mocks/projectsApi.ts',
+      ),
       [path.resolve(storybookDir, '../src/lib/supabase.ts')]: path.resolve(
         storybookDir,
         './mocks/supabase.ts',
