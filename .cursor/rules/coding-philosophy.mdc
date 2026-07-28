@@ -1,0 +1,26 @@
+---
+description: Core coding philosophy — readable names over comments
+alwaysApply: true
+---
+
+# Coding Philosophy
+
+Prefer code that reads clearly without commentary.
+
+## Naming over comments
+
+- Name variables, functions, types, and components so a human can understand intent from the name alone.
+- Prefer `getOverdueMaintenanceForVehicle` over `gom` plus a comment.
+- Use garage-domain language: `Vehicle`, `MaintenanceRecord`, `FixResearchNote`.
+
+## When comments are allowed
+
+- Explain non-obvious **why** (constraints, tradeoffs, workarounds).
+- Never narrate what the next line does.
+- Prefer deleting a comment by renaming or extracting a function.
+
+## Structure
+
+- Keep functions and components small and single-purpose.
+- Match existing project patterns; do not drive-by refactor unrelated code.
+- Types should carry meaning; avoid vague names like `data`, `info`, `handler` when a domain name exists.

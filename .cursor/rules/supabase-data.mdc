@@ -1,0 +1,13 @@
+---
+description: Supabase client and RLS safety for Fleet
+globs: src/lib/supabase.ts,src/**/*Api.ts,supabase/**/*
+alwaysApply: false
+---
+
+# Supabase data rules
+
+- Browser code may use only the anon key via `src/lib/supabase.ts`.
+- Never add `service_role` keys to Vite env vars or commit them.
+- Every new table must enable RLS and policies scoped with `auth.uid() = user_id`.
+- Keep TypeScript row types in `src/lib/database.types.ts` aligned with migrations.
+- Prefer feature `*Api.ts` helpers over calling `supabase.from(...)` directly in components.

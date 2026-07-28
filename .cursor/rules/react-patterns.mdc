@@ -1,0 +1,13 @@
+---
+description: React feature-folder patterns for Fleet
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# React patterns
+
+- Keep feature code under `src/features/<feature>/` with page components and `*Api.ts` helpers colocated.
+- Shared app chrome lives in `src/app/` (router, auth, shell, guards).
+- Prefer descriptive component names: `VehicleDetailPage`, `MaintenanceSection`, `ResearchFormPage`.
+- Load data in the page/section that owns it; keep API calls in `*Api.ts` files, not inline Supabase calls scattered through JSX.
+- Use domain types from `src/lib/database.types.ts`.
