@@ -53,24 +53,36 @@ The anon/publishable key is safe in the browser only because RLS protects your t
 4. Confirm tables exist under **Table Editor**: `vehicles`, `maintenance_records`, `fix_research_notes`.
 5. Confirm each table shows **RLS enabled**.
 
-## 5. Create your account in the app
+## 5. Enable vehicle photo storage
+
+1. Open **SQL Editor** in the Supabase dashboard.
+2. Paste the contents of [`supabase/migrations/20260728140000_vehicle_photos.sql`](../supabase/migrations/20260728140000_vehicle_photos.sql).
+3. Run the query.
+4. Confirm under **Storage** that the `vehicle-photos` bucket exists and is public (needed so the app can show images via public URLs).
+5. Confirm `vehicles.photo_path` exists under **Table Editor**.
+
+Photos are stored at `{user_id}/{vehicle_id}/photo.*`. Storage policies only allow the signed-in owner to upload, replace, or delete their own folder.
+
+## 6. Create your account in the app
 
 1. Run the app: `npm run dev`
 2. Open `http://localhost:5173`
 3. Use **Create account** with your email and a password (at least 6 characters).
 4. Sign in.
-5. Add a vehicle to confirm reads/writes work.
+5. Add a vehicle (optionally with a photo) to confirm reads/writes work.
 
 Optional hardening for a personal app: after your account exists, disable new public signups in Auth settings so strangers cannot create accounts against your project.
 
-## 6. Sanity checklist
+## 7. Sanity checklist
 
 - [ ] `.env.local` has real URL + anon/publishable key (no secret keys)
 - [ ] Email auth enabled
 - [ ] Site URL points at localhost
-- [ ] Migration SQL ran without errors
+- [ ] Initial migration SQL ran without errors
+- [ ] Vehicle photos migration SQL ran without errors
 - [ ] You can sign up / sign in
 - [ ] You can add a vehicle and see it in the list
+- [ ] You can add/change a vehicle photo and see it on list and detail pages
 
 ## Common errors
 
@@ -78,6 +90,8 @@ Optional hardening for a personal app: after your account exists, disable new pu
 | --- | --- |
 | Supabase is not configured yet | Create `.env.local` and restart Vite |
 | relation "vehicles" does not exist | Run the migration SQL |
+| column "photo_path" does not exist | Run the vehicle photos migration SQL |
+| Bucket not found / storage upload failed | Run the vehicle photos migration SQL and confirm `vehicle-photos` exists |
 | Invalid login credentials | Confirm email provider settings / password |
 | new row violates row-level security | Make sure you are signed in and `user_id` matches `auth.uid()` |
 | Looking for Settings → API and not finding it | Use **Settings → API Keys** or the **Connect** dialog instead |

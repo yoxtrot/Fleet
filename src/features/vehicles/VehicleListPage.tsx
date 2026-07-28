@@ -2,22 +2,27 @@ import { useEffect, useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import {
   Alert,
+  Box,
   Button,
   Card,
   CardActionArea,
-  CardContent,
   Stack,
   Typography,
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
-import { listVehiclesForUser } from './vehiclesApi'
+import { listVehiclesForUser, resolveVehiclePhotoUrl } from './vehiclesApi'
 import type { Vehicle } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
 
+type VehicleListItem = {
+  vehicle: Vehicle
+  photoUrl: string | null
+}
+
 export function VehicleListPage() {
   const { user } = useAuth()
-  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [vehicleItems, setVehicleItems] = useState<VehicleListItem[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -26,8 +31,14 @@ export function VehicleListPage() {
     let isMounted = true
 
     listVehiclesForUser(user.id)
-      .then((rows) => {
-        if (isMounted) setVehicles(rows)
+      .then(async (rows) => {
+        const items = await Promise.all(
+          rows.map(async (vehicle) => ({
+            vehicle,
+            photoUrl: await resolveVehiclePhotoUrl(vehicle.photo_path),
+          })),
+        )
+        if (isMounted) setVehicleItems(items)
       })
       .catch((error: unknown) => {
         if (isMounted) setLoadError(error instanceof Error ? error.message : 'Failed to load vehicles')
@@ -58,24 +69,45 @@ export function VehicleListPage() {
         </Alert>
       ) : null}
 
-      {vehicles.length === 0 && !loadError ? (
+      {vehicleItems.length === 0 && !loadError ? (
         <Typography color="text.secondary">Your fleet is empty. Add a vehicle to get started.</Typography>
       ) : (
         <Stack spacing={1.5}>
-          {vehicles.map((vehicle) => (
+          {vehicleItems.map(({ vehicle, photoUrl }) => (
             <Card key={vehicle.id} variant="outlined">
               <CardActionArea component={RouterLink} to={`/vehicles/${vehicle.id}`}>
-                <CardContent>
-                  <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
-                  <Typography color="text.secondary">
-                    {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
-                  </Typography>
-                  {vehicle.current_mileage != null ? (
-                    <Typography color="text.secondary" variant="body2">
-                      {vehicle.current_mileage.toLocaleString()} mi
-                    </Typography>
+                <Stack direction="row" spacing={2} sx={{ p: 1.5, alignItems: 'center' }}>
+                  {photoUrl ? (
+                    <Box
+                      sx={{
+                        width: 120,
+                        height: 90,
+                        flexShrink: 0,
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        bgcolor: 'action.hover',
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={photoUrl}
+                        alt={vehicle.nickname}
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    </Box>
                   ) : null}
-                </CardContent>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
+                    <Typography color="text.secondary">
+                      {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+                    </Typography>
+                    {vehicle.current_mileage != null ? (
+                      <Typography color="text.secondary" variant="body2">
+                        {vehicle.current_mileage.toLocaleString()} mi
+                      </Typography>
+                    ) : null}
+                  </Box>
+                </Stack>
               </CardActionArea>
             </Card>
           ))}

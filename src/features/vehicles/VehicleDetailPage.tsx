@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { deleteVehicle, getVehicleById } from './vehiclesApi'
+import { VehiclePhoto } from './VehiclePhoto'
 import { MaintenanceSection } from '../maintenance/MaintenanceSection'
 import type { Vehicle } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
@@ -73,7 +74,7 @@ export function VehicleDetailPage() {
         spacing={2}
         sx={{ mb: 3, justifyContent: 'space-between', alignItems: { sm: 'flex-start' } }}
       >
-        <Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <Button component={RouterLink} to="/vehicles" size="small" variant="text" sx={{ px: 0, mb: 1 }}>
             Vehicles
           </Button>
@@ -91,6 +92,12 @@ export function VehicleDetailPage() {
           </Button>
         </Stack>
       </Stack>
+
+      {vehicle.photo_path ? (
+        <Box sx={{ mb: 3 }}>
+          <VehiclePhoto photoPath={vehicle.photo_path} nickname={vehicle.nickname} height={280} />
+        </Box>
+      ) : null}
 
       <Stack spacing={2} sx={{ mb: 4 }}>
         <Box>

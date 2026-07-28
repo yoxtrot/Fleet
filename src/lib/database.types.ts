@@ -8,6 +8,7 @@ export type Vehicle = {
   vin: string | null
   current_mileage: number | null
   notes: string | null
+  photo_path: string | null
   created_at: string
   updated_at: string
 }
@@ -54,6 +55,7 @@ type VehiclesTable = {
     vin?: string | null
     current_mileage?: number | null
     notes?: string | null
+    photo_path?: string | null
     created_at?: string
     updated_at?: string
   }
@@ -67,6 +69,7 @@ type VehiclesTable = {
     vin?: string | null
     current_mileage?: number | null
     notes?: string | null
+    photo_path?: string | null
     created_at?: string
     updated_at?: string
   }
