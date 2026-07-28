@@ -25,6 +25,14 @@ npm run dev
 
 Open `http://localhost:5173`.
 
+4. Run Storybook (component gallery):
+
+```bash
+npm run storybook
+```
+
+Open `http://localhost:6006`.
+
 ## Coding philosophy
 
 Readable names over comments. See [docs/coding-philosophy.md](docs/coding-philosophy.md).
