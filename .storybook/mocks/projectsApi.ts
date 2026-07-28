@@ -18,6 +18,9 @@ const sampleProjects: VehicleProject[] = [
     description: '2.5" lift with new UCAs.',
     image_paths: ['user-storybook/project-1/a.jpg'],
     part_links: ['https://example.com/lift-kit', 'https://example.com/uca'],
+    maintenance_description: null,
+    maintenance_mileage_interval_miles: null,
+    maintenance_time_interval_days: null,
     created_at: '2026-02-01T00:00:00.000Z',
     updated_at: '2026-02-02T00:00:00.000Z',
   },
@@ -40,6 +43,9 @@ export async function createProjectForUser(userId: string, draft: VehicleProject
     id: `project-${projects.length + 1}`,
     user_id: userId,
     image_paths: [],
+    maintenance_description: null,
+    maintenance_mileage_interval_miles: null,
+    maintenance_time_interval_days: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...draft,
@@ -96,4 +102,36 @@ export function parsePartLinksText(value: string) {
 
 export function formatPartLinksText(links: string[]) {
   return links.join('\n')
+}
+
+export function monthsToDays(months: number) {
+  return months * 30
+}
+
+export function daysToMonths(days: number) {
+  if (days % 30 !== 0) return null
+  return days / 30
+}
+
+export function formatMaintenanceTimeInterval(days: number) {
+  const months = daysToMonths(days)
+  if (months != null) {
+    return `Every ${months} month${months === 1 ? '' : 's'}`
+  }
+  return `Every ${days} day${days === 1 ? '' : 's'}`
+}
+
+export function formatProjectMaintenanceInterval(project: VehicleProject) {
+  const parts: string[] = []
+  if (project.maintenance_mileage_interval_miles != null) {
+    parts.push(`Every ${project.maintenance_mileage_interval_miles.toLocaleString()} mi`)
+  }
+  if (project.maintenance_time_interval_days != null) {
+    parts.push(formatMaintenanceTimeInterval(project.maintenance_time_interval_days))
+  }
+  return parts.join(' · ')
+}
+
+export function projectHasMaintenance(project: VehicleProject) {
+  return Boolean(project.maintenance_description)
 }

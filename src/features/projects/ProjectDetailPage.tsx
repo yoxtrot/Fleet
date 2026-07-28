@@ -13,7 +13,6 @@ import { useAuth } from '../../app/AuthProvider'
 import {
   deleteProject,
   formatMaintenanceTimeInterval,
-  formatProjectMaintenanceInterval,
   getProjectById,
   projectHasMaintenance,
   removeProjectImage,

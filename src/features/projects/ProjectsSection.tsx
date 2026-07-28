@@ -11,15 +11,25 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { formatProjectMaintenanceInterval, listProjectsForVehicle, projectHasMaintenance } from './projectsApi'
+import {
+  formatProjectMaintenanceInterval,
+  listProjectsForVehicle,
+  projectHasMaintenance,
+  resolveProjectImageUrl,
+} from './projectsApi'
 import type { VehicleProject } from '../../lib/database.types'
 
 type ProjectsSectionProps = {
   vehicleId: string
 }
 
+type ProjectListItem = {
+  project: VehicleProject
+  imageUrls: string[]
+}
+
 export function ProjectsSection({ vehicleId }: ProjectsSectionProps) {
-  const [projects, setProjects] = useState<VehicleProject[]>([])
+  const [projectItems, setProjectItems] = useState<ProjectListItem[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -27,8 +37,16 @@ export function ProjectsSection({ vehicleId }: ProjectsSectionProps) {
     let isMounted = true
 
     listProjectsForVehicle(vehicleId)
-      .then((rows) => {
-        if (isMounted) setProjects(rows)
+      .then(async (rows) => {
+        const items = await Promise.all(
+          rows.map(async (project) => ({
+            project,
+            imageUrls: (
+              await Promise.all(project.image_paths.map((imagePath) => resolveProjectImageUrl(imagePath)))
+            ).filter(Boolean),
+          })),
+        )
+        if (isMounted) setProjectItems(items)
       })
       .catch((error: unknown) => {
         if (isMounted) setLoadError(error instanceof Error ? error.message : 'Failed to load projects')
@@ -58,17 +76,46 @@ export function ProjectsSection({ vehicleId }: ProjectsSectionProps) {
         </Alert>
       ) : null}
 
-      {!isLoading && !loadError && projects.length === 0 ? (
+      {!isLoading && !loadError && projectItems.length === 0 ? (
         <Typography color="text.secondary">
           No projects yet. Add one for planned work, parts links, and reference photos.
         </Typography>
       ) : null}
 
       <Stack spacing={1.5}>
-        {projects.map((project) => (
+        {projectItems.map(({ project, imageUrls }) => (
           <Card key={project.id} variant="outlined">
             <CardActionArea component={RouterLink} to={`/vehicles/${vehicleId}/projects/${project.id}`}>
               <CardContent>
+                {imageUrls.length > 0 ? (
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))',
+                      gap: 1,
+                      mb: 1.5,
+                    }}
+                  >
+                    {imageUrls.map((imageUrl, index) => (
+                      <Box
+                        key={`${project.id}-image-${index}`}
+                        sx={{
+                          height: 88,
+                          borderRadius: 1,
+                          overflow: 'hidden',
+                          bgcolor: 'action.hover',
+                        }}
+                      >
+                        <Box
+                          component="img"
+                          src={imageUrl}
+                          alt={`${project.title} photo ${index + 1}`}
+                          sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                ) : null}
                 <Typography sx={{ fontWeight: 700 }}>{project.title}</Typography>
                 {project.description ? (
                   <Typography color="text.secondary" sx={{ mt: 0.5 }} noWrap>
