@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  Stack,
+  Typography,
+} from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { deleteVehicle, getVehicleById } from './vehiclesApi'
 import { MaintenanceSection } from '../maintenance/MaintenanceSection'
 import type { Vehicle } from '../../lib/database.types'
+import { PageLoadingState } from '../../shared/PageLoadingState'
+import { PagePanel } from '../../shared/PagePanel'
 
 export function VehicleDetailPage() {
   const { vehicleId } = useParams()
@@ -41,52 +51,73 @@ export function VehicleDetailPage() {
     navigate('/vehicles')
   }
 
-  if (isLoading) return <p className="page-status">Loading vehicle…</p>
+  if (isLoading) return <PageLoadingState label="Loading vehicle…" />
+
   if (loadError || !vehicle || !vehicleId || !user) {
     return (
-      <div className="page">
-        <p className="form-error">{loadError ?? 'Vehicle not found'}</p>
-        <Link to="/vehicles">Back to vehicles</Link>
-      </div>
+      <PagePanel>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {loadError ?? 'Vehicle not found'}
+        </Alert>
+        <Button component={RouterLink} to="/vehicles" variant="text">
+          Back to vehicles
+        </Button>
+      </PagePanel>
     )
   }
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">
-            <Link to="/vehicles">Vehicles</Link>
-          </p>
-          <h1>{vehicle.nickname}</h1>
-          <p className="muted">{[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}</p>
-        </div>
-        <div className="button-row">
-          <Link className="button-secondary" to={`/vehicles/${vehicle.id}/edit`}>
+    <PagePanel>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{ mb: 3, justifyContent: 'space-between', alignItems: { sm: 'flex-start' } }}
+      >
+        <Box>
+          <Button component={RouterLink} to="/vehicles" size="small" variant="text" sx={{ px: 0, mb: 1 }}>
+            Vehicles
+          </Button>
+          <Typography variant="h1">{vehicle.nickname}</Typography>
+          <Typography color="text.secondary">
+            {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1}>
+          <Button component={RouterLink} to={`/vehicles/${vehicle.id}/edit`} variant="outlined">
             Edit
-          </Link>
-          <button type="button" className="button-danger" onClick={() => void handleDelete()}>
+          </Button>
+          <Button color="error" variant="outlined" onClick={() => void handleDelete()}>
             Delete
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Stack>
+      </Stack>
 
-      <dl className="detail-list">
-        <div>
-          <dt>VIN</dt>
-          <dd>{vehicle.vin || '—'}</dd>
-        </div>
-        <div>
-          <dt>Mileage</dt>
-          <dd>{vehicle.current_mileage != null ? `${vehicle.current_mileage.toLocaleString()} mi` : '—'}</dd>
-        </div>
-        <div>
-          <dt>Notes</dt>
-          <dd>{vehicle.notes || '—'}</dd>
-        </div>
-      </dl>
+      <Stack spacing={2} sx={{ mb: 4 }}>
+        <Box>
+          <Typography variant="overline" color="text.secondary">
+            VIN
+          </Typography>
+          <Typography>{vehicle.vin || '—'}</Typography>
+        </Box>
+        <Divider />
+        <Box>
+          <Typography variant="overline" color="text.secondary">
+            Mileage
+          </Typography>
+          <Typography>
+            {vehicle.current_mileage != null ? `${vehicle.current_mileage.toLocaleString()} mi` : '—'}
+          </Typography>
+        </Box>
+        <Divider />
+        <Box>
+          <Typography variant="overline" color="text.secondary">
+            Notes
+          </Typography>
+          <Typography sx={{ whiteSpace: 'pre-wrap' }}>{vehicle.notes || '—'}</Typography>
+        </Box>
+      </Stack>
 
       <MaintenanceSection vehicleId={vehicleId} userId={user.id} />
-    </div>
+    </PagePanel>
   )
 }

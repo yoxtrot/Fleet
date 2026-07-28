@@ -1,5 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  Grid,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import {
   createMaintenanceRecord,
   deleteMaintenanceRecord,
   listMaintenanceForVehicle,
@@ -97,78 +107,108 @@ export function MaintenanceSection({ vehicleId, userId }: MaintenanceSectionProp
   }
 
   return (
-    <section className="stack-section">
-      <h2>Maintenance</h2>
-      {isLoading ? <p className="muted">Loading history…</p> : null}
-      {loadError ? <p className="form-error">{loadError}</p> : null}
+    <Box component="section">
+      <Typography variant="h2" gutterBottom>
+        Maintenance
+      </Typography>
 
-      <ul className="plain-list">
+      {isLoading ? <Typography color="text.secondary">Loading history…</Typography> : null}
+      {loadError ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {loadError}
+        </Alert>
+      ) : null}
+
+      <Stack spacing={1.5} sx={{ mb: 3 }}>
         {records.map((record) => (
-          <li key={record.id} className="history-item">
-            <div>
-              <strong>{record.title}</strong>
-              <p className="muted">
+          <Box
+            key={record.id}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: '1fr auto' },
+              gap: 1.5,
+              p: 2,
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 2,
+            }}
+          >
+            <Box>
+              <Typography sx={{ fontWeight: 700 }}>{record.title}</Typography>
+              <Typography color="text.secondary" variant="body2">
                 {record.performed_on}
                 {record.mileage != null ? ` · ${record.mileage.toLocaleString()} mi` : ''}
                 {` · ${formatCost(record.cost_cents)}`}
                 {record.performed_by ? ` · ${record.performed_by}` : ''}
-              </p>
-              {record.notes ? <p>{record.notes}</p> : null}
-            </div>
-            <button type="button" className="button-danger" onClick={() => void handleDelete(record.id)}>
+              </Typography>
+              {record.notes ? <Typography sx={{ mt: 1 }}>{record.notes}</Typography> : null}
+            </Box>
+            <Button color="error" variant="outlined" onClick={() => void handleDelete(record.id)}>
               Delete
-            </button>
-          </li>
+            </Button>
+          </Box>
         ))}
-      </ul>
+      </Stack>
 
       {records.length === 0 && !isLoading && !loadError ? (
-        <p className="muted">No maintenance logged for this vehicle yet.</p>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          No maintenance logged for this vehicle yet.
+        </Typography>
       ) : null}
 
-      <h3>Log work</h3>
-      <form className="stack-form" onSubmit={handleSubmit}>
-        <label>
-          Title
-          <input value={title} onChange={(event) => setTitle(event.target.value)} required />
-        </label>
-        <div className="form-grid">
-          <label>
-            Date
-            <input
+      <Divider sx={{ mb: 3 }} />
+
+      <Typography variant="h3" gutterBottom>
+        Log work
+      </Typography>
+      <Stack component="form" spacing={2} onSubmit={handleSubmit}>
+        <TextField label="Title" value={title} onChange={(event) => setTitle(event.target.value)} required />
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              label="Date"
               type="date"
               value={performedOn}
               onChange={(event) => setPerformedOn(event.target.value)}
               required
+              slotProps={{ inputLabel: { shrink: true } }}
             />
-          </label>
-          <label>
-            Mileage
-            <input type="number" value={mileage} onChange={(event) => setMileage(event.target.value)} />
-          </label>
-          <label>
-            Cost (USD)
-            <input
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              label="Mileage"
               type="number"
-              step="0.01"
+              value={mileage}
+              onChange={(event) => setMileage(event.target.value)}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              label="Cost (USD)"
+              type="number"
+              slotProps={{ htmlInput: { step: '0.01' } }}
               value={costDollars}
               onChange={(event) => setCostDollars(event.target.value)}
             />
-          </label>
-        </div>
-        <label>
-          Shop / DIY
-          <input value={performedBy} onChange={(event) => setPerformedBy(event.target.value)} />
-        </label>
-        <label>
-          Notes
-          <textarea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} />
-        </label>
-        {formError ? <p className="form-error">{formError}</p> : null}
-        <button type="submit" disabled={isSaving}>
+          </Grid>
+        </Grid>
+        <TextField
+          label="Shop / DIY"
+          value={performedBy}
+          onChange={(event) => setPerformedBy(event.target.value)}
+        />
+        <TextField
+          label="Notes"
+          multiline
+          minRows={3}
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+        />
+        {formError ? <Alert severity="error">{formError}</Alert> : null}
+        <Button type="submit" disabled={isSaving}>
           {isSaving ? 'Saving…' : 'Add maintenance'}
-        </button>
-      </form>
-    </section>
+        </Button>
+      </Stack>
+    </Box>
   )
 }

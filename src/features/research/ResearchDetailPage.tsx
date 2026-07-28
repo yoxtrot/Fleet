@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  Stack,
+  Typography,
+} from '@mui/material'
 import { deleteResearchNote, getResearchNoteById } from './researchApi'
 import { getVehicleById } from '../vehicles/vehiclesApi'
 import type { FixResearchNote } from '../../lib/database.types'
+import { PageLoadingState } from '../../shared/PageLoadingState'
+import { PagePanel } from '../../shared/PagePanel'
 
 export function ResearchDetailPage() {
   const { noteId } = useParams()
@@ -45,62 +55,64 @@ export function ResearchDetailPage() {
     navigate('/research')
   }
 
-  if (isLoading) return <p className="page-status">Loading note…</p>
+  if (isLoading) return <PageLoadingState label="Loading note…" />
+
   if (loadError || !note || !noteId) {
     return (
-      <div className="page">
-        <p className="form-error">{loadError ?? 'Note not found'}</p>
-        <Link to="/research">Back to research</Link>
-      </div>
+      <PagePanel>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {loadError ?? 'Note not found'}
+        </Alert>
+        <Button component={RouterLink} to="/research" variant="text">
+          Back to research
+        </Button>
+      </PagePanel>
     )
   }
 
-  return (
-    <div className="page">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">
-            <Link to="/research">Research</Link>
-          </p>
-          <h1>{note.title}</h1>
-          <p className="muted">{vehicleNickname ?? 'No linked vehicle'}</p>
-        </div>
-        <div className="button-row">
-          <Link className="button-secondary" to={`/research/${note.id}/edit`}>
-            Edit
-          </Link>
-          <button type="button" className="button-danger" onClick={() => void handleDelete()}>
-            Delete
-          </button>
-        </div>
-      </div>
+  const detailFields = [
+    { label: 'Symptom', value: note.symptom },
+    { label: 'Diagnosis', value: note.diagnosis },
+    { label: 'Steps tried', value: note.steps_tried },
+    { label: 'Parts list', value: note.parts_list },
+    { label: 'External links', value: note.external_links },
+    { label: 'Tags', value: note.tags.length > 0 ? note.tags.join(', ') : null },
+  ]
 
-      <dl className="detail-list">
-        <div>
-          <dt>Symptom</dt>
-          <dd className="preserve-lines">{note.symptom || '—'}</dd>
-        </div>
-        <div>
-          <dt>Diagnosis</dt>
-          <dd className="preserve-lines">{note.diagnosis || '—'}</dd>
-        </div>
-        <div>
-          <dt>Steps tried</dt>
-          <dd className="preserve-lines">{note.steps_tried || '—'}</dd>
-        </div>
-        <div>
-          <dt>Parts list</dt>
-          <dd className="preserve-lines">{note.parts_list || '—'}</dd>
-        </div>
-        <div>
-          <dt>External links</dt>
-          <dd className="preserve-lines">{note.external_links || '—'}</dd>
-        </div>
-        <div>
-          <dt>Tags</dt>
-          <dd>{note.tags.length > 0 ? note.tags.join(', ') : '—'}</dd>
-        </div>
-      </dl>
-    </div>
+  return (
+    <PagePanel>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{ mb: 3, justifyContent: 'space-between', alignItems: { sm: 'flex-start' } }}
+      >
+        <Box>
+          <Button component={RouterLink} to="/research" size="small" variant="text" sx={{ px: 0, mb: 1 }}>
+            Research
+          </Button>
+          <Typography variant="h1">{note.title}</Typography>
+          <Typography color="text.secondary">{vehicleNickname ?? 'No linked vehicle'}</Typography>
+        </Box>
+        <Stack direction="row" spacing={1}>
+          <Button component={RouterLink} to={`/research/${note.id}/edit`} variant="outlined">
+            Edit
+          </Button>
+          <Button color="error" variant="outlined" onClick={() => void handleDelete()}>
+            Delete
+          </Button>
+        </Stack>
+      </Stack>
+
+      <Stack spacing={2} divider={<Divider flexItem />}>
+        {detailFields.map((field) => (
+          <Box key={field.label}>
+            <Typography variant="overline" color="text.secondary">
+              {field.label}
+            </Typography>
+            <Typography sx={{ whiteSpace: 'pre-wrap' }}>{field.value || '—'}</Typography>
+          </Box>
+        ))}
+      </Stack>
+    </PagePanel>
   )
 }

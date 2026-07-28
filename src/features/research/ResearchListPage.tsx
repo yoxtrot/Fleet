@@ -1,9 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
+import {
+  Alert,
+  Button,
+  Card,
+  CardActionArea,
+  CardContent,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser } from '../vehicles/vehiclesApi'
 import { listResearchNotesForUser } from './researchApi'
 import type { FixResearchNote, Vehicle } from '../../lib/database.types'
+import { PageLoadingState } from '../../shared/PageLoadingState'
+import { PagePanel } from '../../shared/PagePanel'
 
 export function ResearchListPage() {
   const { user } = useAuth()
@@ -50,54 +66,73 @@ export function ResearchListPage() {
     })
   }, [notes, vehicleFilter, tagFilter])
 
-  if (isLoading) return <p className="page-status">Loading research…</p>
+  if (isLoading) return <PageLoadingState label="Loading research…" />
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1>Fix research</h1>
-        <Link className="button-primary" to="/research/new">
+    <PagePanel>
+      <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h1">Fix research</Typography>
+        <Button component={RouterLink} to="/research/new">
           New note
-        </Link>
-      </div>
+        </Button>
+      </Stack>
 
-      <div className="filter-row">
-        <label>
-          Vehicle
-          <select value={vehicleFilter} onChange={(event) => setVehicleFilter(event.target.value)}>
-            <option value="all">All vehicles</option>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+        <FormControl fullWidth size="small">
+          <InputLabel id="vehicle-filter-label">Vehicle</InputLabel>
+          <Select
+            labelId="vehicle-filter-label"
+            label="Vehicle"
+            value={vehicleFilter}
+            onChange={(event) => setVehicleFilter(event.target.value)}
+          >
+            <MenuItem value="all">All vehicles</MenuItem>
             {vehicles.map((vehicle) => (
-              <option key={vehicle.id} value={vehicle.id}>
+              <MenuItem key={vehicle.id} value={vehicle.id}>
                 {vehicle.nickname}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </label>
-        <label>
-          Tag contains
-          <input value={tagFilter} onChange={(event) => setTagFilter(event.target.value)} placeholder="brakes" />
-        </label>
-      </div>
+          </Select>
+        </FormControl>
+        <TextField
+          label="Tag contains"
+          placeholder="brakes"
+          value={tagFilter}
+          onChange={(event) => setTagFilter(event.target.value)}
+        />
+      </Stack>
 
-      {loadError ? <p className="form-error">{loadError}</p> : null}
+      {loadError ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {loadError}
+        </Alert>
+      ) : null}
 
       {filteredNotes.length === 0 && !loadError ? (
-        <p className="muted">No research notes match these filters.</p>
+        <Typography color="text.secondary">No research notes match these filters.</Typography>
       ) : (
-        <ul className="card-list">
+        <Stack spacing={1.5}>
           {filteredNotes.map((note) => (
-            <li key={note.id}>
-              <Link to={`/research/${note.id}`} className="card-link">
-                <strong>{note.title}</strong>
-                <span className="muted">
-                  {note.vehicle_id ? vehicleNicknameById.get(note.vehicle_id) ?? 'Unknown vehicle' : 'No vehicle'}
-                </span>
-                {note.tags.length > 0 ? <span className="muted">{note.tags.join(', ')}</span> : null}
-              </Link>
-            </li>
+            <Card key={note.id} variant="outlined">
+              <CardActionArea component={RouterLink} to={`/research/${note.id}`}>
+                <CardContent>
+                  <Typography sx={{ fontWeight: 700 }}>{note.title}</Typography>
+                  <Typography color="text.secondary">
+                    {note.vehicle_id
+                      ? vehicleNicknameById.get(note.vehicle_id) ?? 'Unknown vehicle'
+                      : 'No vehicle'}
+                  </Typography>
+                  {note.tags.length > 0 ? (
+                    <Typography color="text.secondary" variant="body2">
+                      {note.tags.join(', ')}
+                    </Typography>
+                  ) : null}
+                </CardContent>
+              </CardActionArea>
+            </Card>
           ))}
-        </ul>
+        </Stack>
       )}
-    </div>
+    </PagePanel>
   )
 }

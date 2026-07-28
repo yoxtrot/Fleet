@@ -1,5 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import {
+  Alert,
+  Button,
+  Grid,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import {
   createVehicleForUser,
@@ -7,6 +15,8 @@ import {
   updateVehicle,
   type VehicleDraft,
 } from './vehiclesApi'
+import { PageLoadingState } from '../../shared/PageLoadingState'
+import { PagePanel } from '../../shared/PagePanel'
 
 const emptyDraft: VehicleDraft = {
   nickname: '',
@@ -70,9 +80,10 @@ export function VehicleFormPage() {
     setFormError(null)
 
     try {
-      const saved = isEditing && vehicleId
-        ? await updateVehicle(vehicleId, draft)
-        : await createVehicleForUser(user.id, draft)
+      const saved =
+        isEditing && vehicleId
+          ? await updateVehicle(vehicleId, draft)
+          : await createVehicleForUser(user.id, draft)
       navigate(`/vehicles/${saved.id}`)
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Failed to save vehicle')
@@ -80,79 +91,79 @@ export function VehicleFormPage() {
     }
   }
 
-  if (isLoading) return <p className="page-status">Loading vehicle…</p>
+  if (isLoading) return <PageLoadingState label="Loading vehicle…" />
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1>{isEditing ? 'Edit vehicle' : 'Add vehicle'}</h1>
-        <Link to={isEditing && vehicleId ? `/vehicles/${vehicleId}` : '/vehicles'}>Cancel</Link>
-      </div>
-      <form className="stack-form" onSubmit={handleSubmit}>
-        <label>
-          Nickname
-          <input
-            value={draft.nickname}
-            onChange={(event) => setDraft({ ...draft, nickname: event.target.value })}
-            required
-          />
-        </label>
-        <div className="form-grid">
-          <label>
-            Year
-            <input
+    <PagePanel>
+      <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h1">{isEditing ? 'Edit vehicle' : 'Add vehicle'}</Typography>
+        <Button
+          component={RouterLink}
+          to={isEditing && vehicleId ? `/vehicles/${vehicleId}` : '/vehicles'}
+          variant="text"
+        >
+          Cancel
+        </Button>
+      </Stack>
+
+      <Stack component="form" spacing={2} onSubmit={handleSubmit}>
+        <TextField
+          label="Nickname"
+          value={draft.nickname}
+          onChange={(event) => setDraft({ ...draft, nickname: event.target.value })}
+          required
+        />
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              label="Year"
               type="number"
               value={draft.year ?? ''}
               onChange={(event) => setDraft({ ...draft, year: parseOptionalNumber(event.target.value) })}
             />
-          </label>
-          <label>
-            Make
-            <input
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              label="Make"
               value={draft.make}
               onChange={(event) => setDraft({ ...draft, make: event.target.value })}
               required
             />
-          </label>
-          <label>
-            Model
-            <input
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TextField
+              label="Model"
               value={draft.model}
               onChange={(event) => setDraft({ ...draft, model: event.target.value })}
               required
             />
-          </label>
-        </div>
-        <label>
-          VIN
-          <input
-            value={draft.vin ?? ''}
-            onChange={(event) => setDraft({ ...draft, vin: event.target.value || null })}
-          />
-        </label>
-        <label>
-          Current mileage
-          <input
-            type="number"
-            value={draft.current_mileage ?? ''}
-            onChange={(event) =>
-              setDraft({ ...draft, current_mileage: parseOptionalNumber(event.target.value) })
-            }
-          />
-        </label>
-        <label>
-          Notes
-          <textarea
-            rows={4}
-            value={draft.notes ?? ''}
-            onChange={(event) => setDraft({ ...draft, notes: event.target.value || null })}
-          />
-        </label>
-        {formError ? <p className="form-error">{formError}</p> : null}
-        <button type="submit" disabled={isSaving}>
+          </Grid>
+        </Grid>
+        <TextField
+          label="VIN"
+          value={draft.vin ?? ''}
+          onChange={(event) => setDraft({ ...draft, vin: event.target.value || null })}
+        />
+        <TextField
+          label="Current mileage"
+          type="number"
+          value={draft.current_mileage ?? ''}
+          onChange={(event) =>
+            setDraft({ ...draft, current_mileage: parseOptionalNumber(event.target.value) })
+          }
+        />
+        <TextField
+          label="Notes"
+          multiline
+          minRows={4}
+          value={draft.notes ?? ''}
+          onChange={(event) => setDraft({ ...draft, notes: event.target.value || null })}
+        />
+        {formError ? <Alert severity="error">{formError}</Alert> : null}
+        <Button type="submit" disabled={isSaving}>
           {isSaving ? 'Saving…' : 'Save vehicle'}
-        </button>
-      </form>
-    </div>
+        </Button>
+      </Stack>
+    </PagePanel>
   )
 }

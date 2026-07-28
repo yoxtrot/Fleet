@@ -1,35 +1,74 @@
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Link,
+  Stack,
+  Toolbar,
+  Typography,
+} from '@mui/material'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
+
+const navLinkSx = {
+  color: 'inherit',
+  textDecoration: 'none',
+  fontWeight: 600,
+  opacity: 0.8,
+  '&.active': {
+    opacity: 1,
+    color: 'primary.main',
+  },
+}
 
 export function AppShell() {
   const { user, signOut } = useAuth()
 
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <div className="brand-block">
-          <NavLink to="/" className="brand-name">
-            Fleet
-          </NavLink>
-          <p className="brand-tagline">Personal garage</p>
-        </div>
-        <nav className="app-nav" aria-label="Main">
-          <NavLink to="/" end>
-            Home
-          </NavLink>
-          <NavLink to="/vehicles">Vehicles</NavLink>
-          <NavLink to="/research">Research</NavLink>
-        </nav>
-        <div className="session-block">
-          <span className="session-email">{user?.email}</span>
-          <button type="button" className="button-secondary" onClick={() => void signOut()}>
-            Sign out
-          </button>
-        </div>
-      </header>
-      <main className="app-main">
+    <Box sx={{ minHeight: '100vh' }}>
+      <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 1 }}>
+          <Box sx={{ mr: { md: 2 } }}>
+            <Typography
+              component={NavLink}
+              to="/"
+              variant="h6"
+              sx={{ color: 'text.primary', textDecoration: 'none', fontWeight: 700 }}
+            >
+              Fleet
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Personal garage
+            </Typography>
+          </Box>
+
+          <Stack direction="row" spacing={2} sx={{ flexGrow: 1 }}>
+            <Link component={NavLink} to="/" end sx={navLinkSx}>
+              Home
+            </Link>
+            <Link component={NavLink} to="/vehicles" sx={navLinkSx}>
+              Vehicles
+            </Link>
+            <Link component={NavLink} to="/research" sx={navLinkSx}>
+              Research
+            </Link>
+          </Stack>
+
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
+              {user?.email}
+            </Typography>
+            <Button variant="outlined" color="inherit" onClick={() => void signOut()}>
+              Sign out
+            </Button>
+          </Stack>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="md" sx={{ py: 3 }}>
         <Outlet />
-      </main>
-    </div>
+      </Container>
+    </Box>
   )
 }

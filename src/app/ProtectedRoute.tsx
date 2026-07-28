@@ -1,11 +1,12 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
+import { PageLoadingState } from '../shared/PageLoadingState'
 
 export function ProtectedRoute() {
   const { user, isLoadingSession } = useAuth()
 
   if (isLoadingSession) {
-    return <p className="page-status">Checking your session…</p>
+    return <PageLoadingState label="Checking your session…" />
   }
 
   if (!user) {

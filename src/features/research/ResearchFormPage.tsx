@@ -1,5 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  Alert,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser } from '../vehicles/vehiclesApi'
 import {
@@ -9,6 +20,8 @@ import {
   type ResearchDraft,
 } from './researchApi'
 import type { Vehicle } from '../../lib/database.types'
+import { PageLoadingState } from '../../shared/PageLoadingState'
+import { PagePanel } from '../../shared/PagePanel'
 
 const emptyDraft: ResearchDraft = {
   vehicle_id: null,
@@ -107,88 +120,89 @@ export function ResearchFormPage() {
     }
   }
 
-  if (isLoading) return <p className="page-status">Loading form…</p>
+  if (isLoading) return <PageLoadingState label="Loading form…" />
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1>{isEditing ? 'Edit research note' : 'New research note'}</h1>
-        <Link to={isEditing && noteId ? `/research/${noteId}` : '/research'}>Cancel</Link>
-      </div>
-      <form className="stack-form" onSubmit={handleSubmit}>
-        <label>
-          Title
-          <input
-            value={draft.title}
-            onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-            required
-          />
-        </label>
-        <label>
-          Vehicle
-          <select
+    <PagePanel>
+      <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h1">{isEditing ? 'Edit research note' : 'New research note'}</Typography>
+        <Button
+          component={RouterLink}
+          to={isEditing && noteId ? `/research/${noteId}` : '/research'}
+          variant="text"
+        >
+          Cancel
+        </Button>
+      </Stack>
+
+      <Stack component="form" spacing={2} onSubmit={handleSubmit}>
+        <TextField
+          label="Title"
+          value={draft.title}
+          onChange={(event) => setDraft({ ...draft, title: event.target.value })}
+          required
+        />
+        <FormControl fullWidth size="small">
+          <InputLabel id="research-vehicle-label">Vehicle</InputLabel>
+          <Select
+            labelId="research-vehicle-label"
+            label="Vehicle"
             value={draft.vehicle_id ?? ''}
-            onChange={(event) =>
-              setDraft({ ...draft, vehicle_id: event.target.value || null })
-            }
+            onChange={(event) => setDraft({ ...draft, vehicle_id: event.target.value || null })}
           >
-            <option value="">No vehicle</option>
+            <MenuItem value="">No vehicle</MenuItem>
             {vehicles.map((vehicle) => (
-              <option key={vehicle.id} value={vehicle.id}>
+              <MenuItem key={vehicle.id} value={vehicle.id}>
                 {vehicle.nickname}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </label>
-        <label>
-          Symptom
-          <textarea
-            rows={3}
-            value={draft.symptom ?? ''}
-            onChange={(event) => setDraft({ ...draft, symptom: event.target.value || null })}
-          />
-        </label>
-        <label>
-          Diagnosis
-          <textarea
-            rows={3}
-            value={draft.diagnosis ?? ''}
-            onChange={(event) => setDraft({ ...draft, diagnosis: event.target.value || null })}
-          />
-        </label>
-        <label>
-          Steps tried
-          <textarea
-            rows={5}
-            value={draft.steps_tried ?? ''}
-            onChange={(event) => setDraft({ ...draft, steps_tried: event.target.value || null })}
-          />
-        </label>
-        <label>
-          Parts list
-          <textarea
-            rows={3}
-            value={draft.parts_list ?? ''}
-            onChange={(event) => setDraft({ ...draft, parts_list: event.target.value || null })}
-          />
-        </label>
-        <label>
-          External links
-          <textarea
-            rows={3}
-            value={draft.external_links ?? ''}
-            onChange={(event) => setDraft({ ...draft, external_links: event.target.value || null })}
-          />
-        </label>
-        <label>
-          Tags (comma-separated)
-          <input value={tagsInput} onChange={(event) => setTagsInput(event.target.value)} />
-        </label>
-        {formError ? <p className="form-error">{formError}</p> : null}
-        <button type="submit" disabled={isSaving}>
+          </Select>
+        </FormControl>
+        <TextField
+          label="Symptom"
+          multiline
+          minRows={3}
+          value={draft.symptom ?? ''}
+          onChange={(event) => setDraft({ ...draft, symptom: event.target.value || null })}
+        />
+        <TextField
+          label="Diagnosis"
+          multiline
+          minRows={3}
+          value={draft.diagnosis ?? ''}
+          onChange={(event) => setDraft({ ...draft, diagnosis: event.target.value || null })}
+        />
+        <TextField
+          label="Steps tried"
+          multiline
+          minRows={5}
+          value={draft.steps_tried ?? ''}
+          onChange={(event) => setDraft({ ...draft, steps_tried: event.target.value || null })}
+        />
+        <TextField
+          label="Parts list"
+          multiline
+          minRows={3}
+          value={draft.parts_list ?? ''}
+          onChange={(event) => setDraft({ ...draft, parts_list: event.target.value || null })}
+        />
+        <TextField
+          label="External links"
+          multiline
+          minRows={3}
+          value={draft.external_links ?? ''}
+          onChange={(event) => setDraft({ ...draft, external_links: event.target.value || null })}
+        />
+        <TextField
+          label="Tags (comma-separated)"
+          value={tagsInput}
+          onChange={(event) => setTagsInput(event.target.value)}
+        />
+        {formError ? <Alert severity="error">{formError}</Alert> : null}
+        <Button type="submit" disabled={isSaving}>
           {isSaving ? 'Saving…' : 'Save note'}
-        </button>
-      </form>
-    </div>
+        </Button>
+      </Stack>
+    </PagePanel>
   )
 }

@@ -1,10 +1,25 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
+import {
+  Alert,
+  Button,
+  Card,
+  CardActionArea,
+  CardContent,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Stack,
+  Typography,
+} from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser } from '../vehicles/vehiclesApi'
 import { listRecentMaintenanceForUser } from '../maintenance/maintenanceApi'
 import { listRecentResearchForUser } from '../research/researchApi'
 import type { Vehicle, MaintenanceRecord, FixResearchNote } from '../../lib/database.types'
+import { PageLoadingState } from '../../shared/PageLoadingState'
+import { PagePanel } from '../../shared/PagePanel'
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -44,96 +59,121 @@ export function DashboardPage() {
     }
   }, [user])
 
-  if (isLoading) return <p className="page-status">Loading garage…</p>
+  if (isLoading) return <PageLoadingState label="Loading garage…" />
+
   if (loadError) {
     return (
-      <div className="page">
-        <h1>Home</h1>
-        <p className="form-error">{loadError}</p>
-        <p className="muted">
+      <PagePanel>
+        <Typography variant="h1" gutterBottom>
+          Home
+        </Typography>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {loadError}
+        </Alert>
+        <Typography color="text.secondary">
           If this mentions a missing table, finish the SQL migration steps in{' '}
           <code>docs/supabase-setup.md</code>.
-        </p>
-      </div>
+        </Typography>
+      </PagePanel>
     )
   }
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1>Home</h1>
-        <Link className="button-secondary" to="/vehicles/new">
+    <PagePanel>
+      <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h1">Home</Typography>
+        <Button component={RouterLink} to="/vehicles/new" variant="outlined">
           Add vehicle
-        </Link>
-      </div>
+        </Button>
+      </Stack>
 
-      <section className="summary-grid">
-        <div>
-          <p className="summary-label">Vehicles</p>
-          <p className="summary-value">{vehicles.length}</p>
-        </div>
-        <div>
-          <p className="summary-label">Recent maintenance</p>
-          <p className="summary-value">{recentMaintenance.length}</p>
-        </div>
-        <div>
-          <p className="summary-label">Recent research</p>
-          <p className="summary-value">{recentResearch.length}</p>
-        </div>
-      </section>
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        {[
+          { label: 'Vehicles', value: vehicles.length },
+          { label: 'Recent maintenance', value: recentMaintenance.length },
+          { label: 'Recent research', value: recentResearch.length },
+        ].map((summary) => (
+          <Grid key={summary.label} size={{ xs: 12, sm: 4 }}>
+            <Card variant="outlined">
+              <CardContent>
+                <Typography color="text.secondary" variant="body2">
+                  {summary.label}
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  {summary.value}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
-      <section className="stack-section">
-        <h2>Your vehicles</h2>
-        {vehicles.length === 0 ? (
-          <p className="muted">No vehicles yet. Add your first one to start logging work.</p>
-        ) : (
-          <ul className="plain-list">
-            {vehicles.map((vehicle) => (
-              <li key={vehicle.id}>
-                <Link to={`/vehicles/${vehicle.id}`}>{vehicle.nickname}</Link>
-                <span className="muted">
-                  {' '}
-                  — {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <Stack spacing={4}>
+        <section>
+          <Typography variant="h2" gutterBottom>
+            Your vehicles
+          </Typography>
+          {vehicles.length === 0 ? (
+            <Typography color="text.secondary">No vehicles yet. Add your first one to start logging work.</Typography>
+          ) : (
+            <List disablePadding>
+              {vehicles.map((vehicle) => (
+                <ListItem key={vehicle.id} disableGutters>
+                  <ListItemText
+                    primary={
+                      <Typography component={RouterLink} to={`/vehicles/${vehicle.id}`} color="primary">
+                        {vehicle.nickname}
+                      </Typography>
+                    }
+                    secondary={[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </section>
 
-      <section className="stack-section">
-        <h2>Recent maintenance</h2>
-        {recentMaintenance.length === 0 ? (
-          <p className="muted">No maintenance logged yet.</p>
-        ) : (
-          <ul className="plain-list">
-            {recentMaintenance.map((record) => (
-              <li key={record.id}>
-                <strong>{record.title}</strong>
-                <span className="muted"> — {record.performed_on}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        <section>
+          <Typography variant="h2" gutterBottom>
+            Recent maintenance
+          </Typography>
+          {recentMaintenance.length === 0 ? (
+            <Typography color="text.secondary">No maintenance logged yet.</Typography>
+          ) : (
+            <List disablePadding>
+              {recentMaintenance.map((record) => (
+                <ListItem key={record.id} disableGutters>
+                  <ListItemText primary={record.title} secondary={record.performed_on} />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </section>
 
-      <section className="stack-section">
-        <div className="section-header">
-          <h2>Recent research</h2>
-          <Link to="/research/new">New note</Link>
-        </div>
-        {recentResearch.length === 0 ? (
-          <p className="muted">No research notes yet.</p>
-        ) : (
-          <ul className="plain-list">
-            {recentResearch.map((note) => (
-              <li key={note.id}>
-                <Link to={`/research/${note.id}`}>{note.title}</Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </div>
+        <section>
+          <Stack direction="row" sx={{ mb: 1, justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h2">Recent research</Typography>
+            <Button component={RouterLink} to="/research/new" size="small" variant="text">
+              New note
+            </Button>
+          </Stack>
+          {recentResearch.length === 0 ? (
+            <Typography color="text.secondary">No research notes yet.</Typography>
+          ) : (
+            <Stack spacing={1}>
+              {recentResearch.map((note) => (
+                <Card key={note.id} variant="outlined">
+                  <CardActionArea component={RouterLink} to={`/research/${note.id}`}>
+                    <CardContent>
+                      <Typography sx={{ fontWeight: 600 }}>{note.title}</Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              ))}
+            </Stack>
+          )}
+        </section>
+      </Stack>
+    </PagePanel>
   )
 }
