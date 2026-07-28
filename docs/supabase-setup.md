@@ -63,6 +63,29 @@ The anon/publishable key is safe in the browser only because RLS protects your t
 
 Photos are stored at `{user_id}/{vehicle_id}/photo.*`. Storage policies only allow the signed-in owner to upload, replace, or delete their own folder.
 
+## 5b. Apply migrations from the CLI (recommended)
+
+After the first manual setup, prefer applying new SQL files under `supabase/migrations/` with the Fleet script instead of pasting into the SQL Editor.
+
+1. Create a [Supabase personal access token](https://supabase.com/dashboard/account/tokens).
+2. Copy `.env.supabase.example` to `.env.supabase` and fill in:
+   - `SUPABASE_ACCESS_TOKEN`
+   - `SUPABASE_DB_PASSWORD` (database password)
+   - `SUPABASE_PROJECT_ID` (optional if `.env.local` already has `VITE_SUPABASE_URL`)
+3. From the repo root:
+
+```bash
+npm run db:push
+```
+
+Dry-run only:
+
+```bash
+npm run db:push:dry-run
+```
+
+In Cursor, saying **update the database** should trigger the `update-database` skill, which runs the same flow.
+
 ## 6. Create your account in the app
 
 1. Run the app: `npm run dev`

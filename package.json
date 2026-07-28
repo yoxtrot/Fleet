@@ -9,7 +9,9 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "db:push": "node scripts/apply-supabase-migrations.mjs",
+    "db:push:dry-run": "node scripts/apply-supabase-migrations.mjs --dry-run"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

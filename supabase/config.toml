@@ -1,0 +1,17 @@
+# Minimal Supabase CLI config for Fleet migrations.
+# Generated for `npm run db:push` / the update-database skill.
+
+project_id = "fleet"
+
+[api]
+enabled = true
+
+[db]
+port = 54322
+major_version = 15
+
+[db.migrations]
+schema_paths = []
+
+[studio]
+enabled = true
