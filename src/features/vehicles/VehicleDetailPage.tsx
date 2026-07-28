@@ -11,7 +11,6 @@ import {
 import { useAuth } from '../../app/AuthProvider'
 import { deleteVehicle, getVehicleById } from './vehiclesApi'
 import { VehiclePhoto } from './VehiclePhoto'
-import { MaintenanceSection } from '../maintenance/MaintenanceSection'
 import { ProjectsSection } from '../projects/ProjectsSection'
 import type { Vehicle } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
@@ -48,7 +47,7 @@ export function VehicleDetailPage() {
   async function handleDelete() {
     if (!vehicleId || !vehicle) return
     const confirmed = window.confirm(
-      `Delete ${vehicle.nickname}? This also removes its projects and maintenance records.`,
+      `Delete ${vehicle.nickname}? This also removes its projects.`,
     )
     if (!confirmed) return
     await deleteVehicle(vehicleId)
@@ -128,8 +127,6 @@ export function VehicleDetailPage() {
       </Stack>
 
       <ProjectsSection vehicleId={vehicleId} />
-
-      <MaintenanceSection vehicleId={vehicleId} userId={user.id} />
     </PagePanel>
   )
 }

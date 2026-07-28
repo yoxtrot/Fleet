@@ -15,16 +15,14 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser } from '../vehicles/vehiclesApi'
-import { listRecentMaintenanceForUser } from '../maintenance/maintenanceApi'
 import { listRecentResearchForUser } from '../research/researchApi'
-import type { Vehicle, MaintenanceRecord, FixResearchNote } from '../../lib/database.types'
+import type { Vehicle, FixResearchNote } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
 
 export function DashboardPage() {
   const { user } = useAuth()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
-  const [recentMaintenance, setRecentMaintenance] = useState<MaintenanceRecord[]>([])
   const [recentResearch, setRecentResearch] = useState<FixResearchNote[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -36,14 +34,12 @@ export function DashboardPage() {
 
     async function loadDashboard() {
       try {
-        const [vehicleRows, maintenanceRows, researchRows] = await Promise.all([
+        const [vehicleRows, researchRows] = await Promise.all([
           listVehiclesForUser(user!.id),
-          listRecentMaintenanceForUser(user!.id),
           listRecentResearchForUser(user!.id),
         ])
         if (!isMounted) return
         setVehicles(vehicleRows)
-        setRecentMaintenance(maintenanceRows)
         setRecentResearch(researchRows)
       } catch (error) {
         if (!isMounted) return
@@ -90,10 +86,9 @@ export function DashboardPage() {
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
           { label: 'Vehicles', value: vehicles.length },
-          { label: 'Recent maintenance', value: recentMaintenance.length },
           { label: 'Recent research', value: recentResearch.length },
         ].map((summary) => (
-          <Grid key={summary.label} size={{ xs: 12, sm: 4 }}>
+          <Grid key={summary.label} size={{ xs: 12, sm: 6 }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography color="text.secondary" variant="body2">
@@ -127,23 +122,6 @@ export function DashboardPage() {
                     }
                     secondary={[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
                   />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </section>
-
-        <section>
-          <Typography variant="h2" gutterBottom>
-            Recent maintenance
-          </Typography>
-          {recentMaintenance.length === 0 ? (
-            <Typography color="text.secondary">No maintenance logged yet.</Typography>
-          ) : (
-            <List disablePadding>
-              {recentMaintenance.map((record) => (
-                <ListItem key={record.id} disableGutters>
-                  <ListItemText primary={record.title} secondary={record.performed_on} />
                 </ListItem>
               ))}
             </List>

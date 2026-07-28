@@ -46,7 +46,7 @@ function runSupabase(args) {
   const result = spawnSync('npx', ['supabase', ...args], {
     cwd: repoRoot,
     stdio: 'inherit',
-    shell: true,
+    shell: false,
     env: process.env,
   })
   if (result.error) fail(result.error.message)
@@ -85,9 +85,9 @@ const includeAll = process.argv.includes('--include-all')
 const dryRun = process.argv.includes('--dry-run')
 
 console.log(`Linking Supabase project ${projectId}…`)
-runSupabase(['link', '--project-ref', projectId, '--password', dbPassword, '--yes'])
+runSupabase(['link', '--project-ref', projectId, '--yes'])
 
-const pushArgs = ['db', 'push', '--linked', '--password', dbPassword, '--yes']
+const pushArgs = ['db', 'push', '--linked', '--yes']
 if (includeAll) pushArgs.push('--include-all')
 if (dryRun) pushArgs.push('--dry-run')
 
