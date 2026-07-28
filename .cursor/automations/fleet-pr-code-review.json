@@ -1,0 +1,27 @@
+{
+  "name": "Fleet PR Code Review",
+  "description": "Reviews Fleet pull requests for bugs, security, and project standards, then comments on the PR.",
+  "workflow": {
+    "triggers": [
+      {
+        "git": {
+          "pullRequest": {
+            "actions": [
+              "GIT_PULL_REQUEST_ACTION_OPENED",
+              "GIT_PULL_REQUEST_ACTION_PUSHED"
+            ],
+            "ignoreDraftPrs": true,
+            "repos": ["yoxtrot/Fleet"]
+          }
+        }
+      }
+    ],
+    "actions": [{ "prComment": {} }],
+    "prompts": [
+      "Review the pull request diff for the Fleet personal garage app.\n\nFocus on:\n- Correctness and likely bugs in vehicles, maintenance, research, and auth flows\n- Readable naming over comments (prefer clear names; comments only for non-obvious why)\n- React feature-folder patterns under src/features and app chrome under src/app\n- Supabase safety: browser code must use only the anon/publishable key; never introduce service_role or secret keys into Vite env or client code\n- Data changes must preserve user_id ownership and Row Level Security expectations\n- Risky or incomplete migrations, auth/session gaps, and insecure redirect/config changes\n\nPost one concise PR comment with findings grouped as Critical, Suggestion, and Nice-to-have. If nothing material is wrong, say so briefly and note any residual risks."
+    ],
+    "model": "",
+    "agentOptions": { "skipInstall": false },
+    "memoryEnabled": true
+  }
+}
