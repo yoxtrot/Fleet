@@ -43,9 +43,18 @@ export function ProjectFormPage() {
   const [mileageInterval, setMileageInterval] = useState('')
   const [timeIntervalMonths, setTimeIntervalMonths] = useState('')
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const [formError, setFormError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(isEditing)
   const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    const urls = selectedImages.map((file) => URL.createObjectURL(file))
+    setImagePreviewUrls(urls)
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [selectedImages])
 
   useEffect(() => {
     if (!projectId) return
@@ -194,11 +203,52 @@ export function ProjectFormPage() {
           onChange={(event) => setPartLinksText(event.target.value)}
         />
 
-        <Stack spacing={1}>
+        <Stack spacing={1.5}>
           <Typography variant="subtitle1">Images</Typography>
           <Typography variant="body2" color="text.secondary">
             JPEG, PNG, or WebP up to 5 MB each. You can add more later from the project page.
           </Typography>
+          {imagePreviewUrls.length > 0 ? (
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                gap: 1.5,
+              }}
+            >
+              {imagePreviewUrls.map((previewUrl, index) => {
+                const file = selectedImages[index]
+                return (
+                  <Box key={`${file?.name ?? 'image'}-${file?.size ?? index}-${file?.lastModified ?? index}`}>
+                    <Box
+                      component="img"
+                      src={previewUrl}
+                      alt={file?.name ?? `Selected image ${index + 1}`}
+                      sx={{
+                        width: '100%',
+                        height: 180,
+                        objectFit: 'cover',
+                        borderRadius: 1,
+                        bgcolor: 'action.hover',
+                        display: 'block',
+                      }}
+                    />
+                    <Button
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      sx={{ mt: 1 }}
+                      onClick={() =>
+                        setSelectedImages((current) => current.filter((_, fileIndex) => fileIndex !== index))
+                      }
+                    >
+                      Remove
+                    </Button>
+                  </Box>
+                )
+              })}
+            </Box>
+          ) : null}
           <Button component="label" variant="outlined" sx={{ alignSelf: 'flex-start' }}>
             {selectedImages.length > 0
               ? `${selectedImages.length} image${selectedImages.length === 1 ? '' : 's'} selected`
@@ -208,18 +258,12 @@ export function ProjectFormPage() {
               type="file"
               accept="image/jpeg,image/png,image/webp"
               multiple
-              onChange={(event) => setSelectedImages(Array.from(event.target.files ?? []))}
+              onChange={(event) => {
+                setSelectedImages(Array.from(event.target.files ?? []))
+                event.target.value = ''
+              }}
             />
           </Button>
-          {selectedImages.length > 0 ? (
-            <Box component="ul" sx={{ m: 0, pl: 2 }}>
-              {selectedImages.map((file) => (
-                <Typography component="li" key={`${file.name}-${file.size}`} variant="body2">
-                  {file.name}
-                </Typography>
-              ))}
-            </Box>
-          ) : null}
         </Stack>
 
         <Divider />
