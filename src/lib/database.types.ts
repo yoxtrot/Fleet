@@ -43,6 +43,21 @@ export type FixResearchNote = {
   updated_at: string
 }
 
+export type VehicleProject = {
+  id: string
+  user_id: string
+  vehicle_id: string
+  title: string
+  description: string | null
+  image_paths: string[]
+  part_links: string[]
+  maintenance_description: string | null
+  maintenance_mileage_interval_miles: number | null
+  maintenance_time_interval_days: number | null
+  created_at: string
+  updated_at: string
+}
+
 type VehiclesTable = {
   Row: Vehicle
   Insert: {
@@ -165,12 +180,54 @@ type FixResearchNotesTable = {
   ]
 }
 
+type VehicleProjectsTable = {
+  Row: VehicleProject
+  Insert: {
+    id?: string
+    user_id: string
+    vehicle_id: string
+    title: string
+    description?: string | null
+    image_paths?: string[]
+    part_links?: string[]
+    maintenance_description?: string | null
+    maintenance_mileage_interval_miles?: number | null
+    maintenance_time_interval_days?: number | null
+    created_at?: string
+    updated_at?: string
+  }
+  Update: {
+    id?: string
+    user_id?: string
+    vehicle_id?: string
+    title?: string
+    description?: string | null
+    image_paths?: string[]
+    part_links?: string[]
+    maintenance_description?: string | null
+    maintenance_mileage_interval_miles?: number | null
+    maintenance_time_interval_days?: number | null
+    created_at?: string
+    updated_at?: string
+  }
+  Relationships: [
+    {
+      foreignKeyName: 'vehicle_projects_vehicle_id_fkey'
+      columns: ['vehicle_id']
+      isOneToOne: false
+      referencedRelation: 'vehicles'
+      referencedColumns: ['id']
+    },
+  ]
+}
+
 export type Database = {
   public: {
     Tables: {
       vehicles: VehiclesTable
       maintenance_records: MaintenanceRecordsTable
       fix_research_notes: FixResearchNotesTable
+      vehicle_projects: VehicleProjectsTable
     }
     Views: Record<string, never>
     Functions: Record<string, never>

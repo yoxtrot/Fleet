@@ -86,6 +86,19 @@ npm run db:push:dry-run
 
 In Cursor, saying **update the database** should trigger the `update-database` skill, which runs the same flow.
 
+## 5c. Enable vehicle projects
+
+1. Apply [`supabase/migrations/20260728220000_vehicle_projects.sql`](../supabase/migrations/20260728220000_vehicle_projects.sql) via `npm run db:push` (preferred) or the SQL Editor.
+2. Confirm table `vehicle_projects` exists with RLS enabled.
+3. Confirm Storage bucket `project-images` exists.
+
+Project images are stored at `{user_id}/{project_id}/{uuid}.*`.
+
+## 5d. Enable maintenance schedules
+
+1. Apply [`supabase/migrations/20260728230000_maintenance_schedules.sql`](../supabase/migrations/20260728230000_maintenance_schedules.sql) via `npm run db:push` (preferred) or the SQL Editor.
+2. Confirm table `maintenance_schedules` exists with RLS enabled.
+
 ## 6. Create your account in the app
 
 1. Run the app: `npm run dev`

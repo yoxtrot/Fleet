@@ -2,29 +2,30 @@ import { useEffect, useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import {
   Alert,
+  Box,
   Button,
   Card,
   CardActionArea,
   CardContent,
   Grid,
-  List,
-  ListItem,
-  ListItemText,
   Stack,
   Typography,
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
-import { listVehiclesForUser } from '../vehicles/vehiclesApi'
-import { listRecentMaintenanceForUser } from '../maintenance/maintenanceApi'
+import { listVehiclesForUser, resolveVehiclePhotoUrl } from '../vehicles/vehiclesApi'
 import { listRecentResearchForUser } from '../research/researchApi'
-import type { Vehicle, MaintenanceRecord, FixResearchNote } from '../../lib/database.types'
+import type { Vehicle, FixResearchNote } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
 
+type VehicleListItem = {
+  vehicle: Vehicle
+  photoUrl: string | null
+}
+
 export function DashboardPage() {
   const { user } = useAuth()
-  const [vehicles, setVehicles] = useState<Vehicle[]>([])
-  const [recentMaintenance, setRecentMaintenance] = useState<MaintenanceRecord[]>([])
+  const [vehicleItems, setVehicleItems] = useState<VehicleListItem[]>([])
   const [recentResearch, setRecentResearch] = useState<FixResearchNote[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -36,14 +37,18 @@ export function DashboardPage() {
 
     async function loadDashboard() {
       try {
-        const [vehicleRows, maintenanceRows, researchRows] = await Promise.all([
+        const [vehicleRows, researchRows] = await Promise.all([
           listVehiclesForUser(user!.id),
-          listRecentMaintenanceForUser(user!.id),
           listRecentResearchForUser(user!.id),
         ])
+        const items = await Promise.all(
+          vehicleRows.map(async (vehicle) => ({
+            vehicle,
+            photoUrl: await resolveVehiclePhotoUrl(vehicle.photo_path),
+          })),
+        )
         if (!isMounted) return
-        setVehicles(vehicleRows)
-        setRecentMaintenance(maintenanceRows)
+        setVehicleItems(items)
         setRecentResearch(researchRows)
       } catch (error) {
         if (!isMounted) return
@@ -89,11 +94,10 @@ export function DashboardPage() {
 
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
-          { label: 'Vehicles', value: vehicles.length },
-          { label: 'Recent maintenance', value: recentMaintenance.length },
+          { label: 'Vehicles', value: vehicleItems.length },
           { label: 'Recent research', value: recentResearch.length },
         ].map((summary) => (
-          <Grid key={summary.label} size={{ xs: 12, sm: 4 }}>
+          <Grid key={summary.label} size={{ xs: 12, sm: 6 }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography color="text.secondary" variant="body2">
@@ -113,40 +117,44 @@ export function DashboardPage() {
           <Typography variant="h2" gutterBottom>
             Your vehicles
           </Typography>
-          {vehicles.length === 0 ? (
+          {vehicleItems.length === 0 ? (
             <Typography color="text.secondary">No vehicles yet. Add your first one to start logging work.</Typography>
           ) : (
-            <List disablePadding>
-              {vehicles.map((vehicle) => (
-                <ListItem key={vehicle.id} disableGutters>
-                  <ListItemText
-                    primary={
-                      <Typography component={RouterLink} to={`/vehicles/${vehicle.id}`} color="primary">
-                        {vehicle.nickname}
-                      </Typography>
-                    }
-                    secondary={[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
-                  />
-                </ListItem>
+            <Stack spacing={1.5}>
+              {vehicleItems.map(({ vehicle, photoUrl }) => (
+                <Card key={vehicle.id} variant="outlined">
+                  <CardActionArea component={RouterLink} to={`/vehicles/${vehicle.id}`}>
+                    <Stack direction="row" spacing={2} sx={{ p: 1.5, alignItems: 'center' }}>
+                      {photoUrl ? (
+                        <Box
+                          sx={{
+                            width: 120,
+                            height: 90,
+                            flexShrink: 0,
+                            borderRadius: 1,
+                            overflow: 'hidden',
+                            bgcolor: 'action.hover',
+                          }}
+                        >
+                          <Box
+                            component="img"
+                            src={photoUrl}
+                            alt={vehicle.nickname}
+                            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                        </Box>
+                      ) : null}
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
+                        <Typography color="text.secondary">
+                          {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </CardActionArea>
+                </Card>
               ))}
-            </List>
-          )}
-        </section>
-
-        <section>
-          <Typography variant="h2" gutterBottom>
-            Recent maintenance
-          </Typography>
-          {recentMaintenance.length === 0 ? (
-            <Typography color="text.secondary">No maintenance logged yet.</Typography>
-          ) : (
-            <List disablePadding>
-              {recentMaintenance.map((record) => (
-                <ListItem key={record.id} disableGutters>
-                  <ListItemText primary={record.title} secondary={record.performed_on} />
-                </ListItem>
-              ))}
-            </List>
+            </Stack>
           )}
         </section>
 
