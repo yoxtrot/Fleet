@@ -18,6 +18,7 @@ Use these intentionally while working:
 | `add-supabase-table` | Adding a new Postgres table with RLS and a CRUD feature slice |
 | `auth-guard-check` | Verifying login, session, and protected routes |
 | `fleet-sprint` | Planning a sprint, adding tasks to the current sprint, or summarizing Linear cycle work |
+| `update-database` | Applying pending Supabase migrations (`update the database`, push/sync migrations) |
 
 Invoke with `@skill-name` or by describing the matching task (for example “help me plan a sprint”).
 

@@ -86,3 +86,29 @@ export function useAuth() {
   }
   return context
 }
+
+type StorybookAuthProviderProps = {
+  children: ReactNode
+  user?: User | null
+  isLoadingSession?: boolean
+}
+
+export function StorybookAuthProvider({
+  children,
+  user = null,
+  isLoadingSession = false,
+}: StorybookAuthProviderProps) {
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      session: null,
+      user,
+      isLoadingSession,
+      signInWithEmail: async () => null,
+      signUpWithEmail: async () => null,
+      signOut: async () => undefined,
+    }),
+    [user, isLoadingSession],
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}

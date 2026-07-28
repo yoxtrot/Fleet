@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "db:push": "node scripts/apply-supabase-migrations.mjs",
+    "db:push:dry-run": "node scripts/apply-supabase-migrations.mjs --dry-run"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -27,6 +31,9 @@
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "storybook": "^10.5.5",
+    "@storybook/react-vite": "^10.5.5",
+    "@storybook/addon-docs": "^10.5.5"
   }
 }

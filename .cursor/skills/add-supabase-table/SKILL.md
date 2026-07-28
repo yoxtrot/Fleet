@@ -17,6 +17,7 @@ description: >-
 5. Create `src/features/<feature>/<feature>Api.ts` with named helpers.
 6. Add routes/pages only if the feature needs UI in this change.
 7. Document any dashboard SQL steps in `docs/supabase-setup.md` if setup instructions change.
+8. Tell the user to say **update the database** (or run `npm run db:push`) so the new migration is applied to Supabase.
 
 ## Checklist
 

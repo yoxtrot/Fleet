@@ -6,6 +6,7 @@
 .env
 .env.*
 !.env.example
+!.env.supabase.example
 *.log
 *.njsproj
 *.ntvs*
@@ -24,3 +25,10 @@ npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+*storybook.log
+storybook-static
+
+# Supabase CLI local link state
+supabase/.temp
+supabase/.branches
