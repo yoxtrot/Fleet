@@ -10,6 +10,9 @@ export type VehicleProjectDraft = {
   title: string
   description: string | null
   part_links: string[]
+  maintenance_description: string | null
+  maintenance_mileage_interval_miles: number | null
+  maintenance_time_interval_days: number | null
 }
 
 export async function listProjectsForVehicle(vehicleId: string) {
@@ -52,6 +55,9 @@ export async function updateProject(projectId: string, draft: Omit<VehicleProjec
       title: draft.title,
       description: draft.description,
       part_links: draft.part_links,
+      maintenance_description: draft.maintenance_description,
+      maintenance_mileage_interval_miles: draft.maintenance_mileage_interval_miles,
+      maintenance_time_interval_days: draft.maintenance_time_interval_days,
       updated_at: new Date().toISOString(),
     })
     .eq('id', projectId)
@@ -60,6 +66,38 @@ export async function updateProject(projectId: string, draft: Omit<VehicleProjec
 
   if (error) throw error
   return data as VehicleProject
+}
+
+export function monthsToDays(months: number) {
+  return months * 30
+}
+
+export function daysToMonths(days: number) {
+  if (days % 30 !== 0) return null
+  return days / 30
+}
+
+export function formatProjectMaintenanceInterval(project: VehicleProject) {
+  const parts: string[] = []
+  if (project.maintenance_mileage_interval_miles != null) {
+    parts.push(`Every ${project.maintenance_mileage_interval_miles.toLocaleString()} mi`)
+  }
+  if (project.maintenance_time_interval_days != null) {
+    parts.push(formatMaintenanceTimeInterval(project.maintenance_time_interval_days))
+  }
+  return parts.join(' · ')
+}
+
+export function formatMaintenanceTimeInterval(days: number) {
+  const months = daysToMonths(days)
+  if (months != null) {
+    return `Every ${months} month${months === 1 ? '' : 's'}`
+  }
+  return `Every ${days} day${days === 1 ? '' : 's'}`
+}
+
+export function projectHasMaintenance(project: VehicleProject) {
+  return Boolean(project.maintenance_description)
 }
 
 export function getProjectImagePublicUrl(imagePath: string) {

@@ -4,6 +4,8 @@ import {
   Alert,
   Box,
   Button,
+  Divider,
+  Grid,
   Stack,
   TextField,
   Typography,
@@ -11,14 +13,23 @@ import {
 import { useAuth } from '../../app/AuthProvider'
 import {
   createProjectForUser,
+  daysToMonths,
   formatPartLinksText,
   getProjectById,
+  monthsToDays,
   parsePartLinksText,
   updateProject,
   uploadProjectImages,
 } from './projectsApi'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
+
+function parseOptionalPositiveInteger(value: string) {
+  if (value.trim() === '') return null
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed <= 0) return null
+  return parsed
+}
 
 export function ProjectFormPage() {
   const { vehicleId, projectId } = useParams()
@@ -28,6 +39,9 @@ export function ProjectFormPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [partLinksText, setPartLinksText] = useState('')
+  const [maintenanceDescription, setMaintenanceDescription] = useState('')
+  const [mileageInterval, setMileageInterval] = useState('')
+  const [timeIntervalMonths, setTimeIntervalMonths] = useState('')
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [formError, setFormError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(isEditing)
@@ -43,6 +57,22 @@ export function ProjectFormPage() {
         setTitle(project.title)
         setDescription(project.description ?? '')
         setPartLinksText(formatPartLinksText(project.part_links))
+        setMaintenanceDescription(project.maintenance_description ?? '')
+        setMileageInterval(
+          project.maintenance_mileage_interval_miles != null
+            ? String(project.maintenance_mileage_interval_miles)
+            : '',
+        )
+        if (project.maintenance_time_interval_days != null) {
+          const months = daysToMonths(project.maintenance_time_interval_days)
+          setTimeIntervalMonths(
+            months != null
+              ? String(months)
+              : String(Math.round(project.maintenance_time_interval_days / 30)),
+          )
+        } else {
+          setTimeIntervalMonths('')
+        }
       })
       .catch((error: unknown) => {
         if (isMounted) setFormError(error instanceof Error ? error.message : 'Failed to load project')
@@ -59,23 +89,56 @@ export function ProjectFormPage() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!user || !vehicleId) return
-    setIsSaving(true)
     setFormError(null)
+
+    const mileageIntervalMiles = parseOptionalPositiveInteger(mileageInterval)
+    const months = parseOptionalPositiveInteger(timeIntervalMonths)
+    const timeIntervalDays = months != null ? monthsToDays(months) : null
+    const trimmedMaintenanceDescription = maintenanceDescription.trim()
+
+    const hasAnyMaintenanceField =
+      trimmedMaintenanceDescription !== '' ||
+      mileageInterval.trim() !== '' ||
+      timeIntervalMonths.trim() !== ''
+
+    if (hasAnyMaintenanceField) {
+      if (!trimmedMaintenanceDescription) {
+        setFormError('Add a maintenance description, or clear the maintenance interval fields.')
+        return
+      }
+      if (mileageIntervalMiles == null && timeIntervalDays == null) {
+        setFormError('Set a mileage interval, a time interval (months), or both for maintenance.')
+        return
+      }
+      if (mileageInterval.trim() !== '' && mileageIntervalMiles == null) {
+        setFormError('Mileage interval must be a positive whole number.')
+        return
+      }
+      if (timeIntervalMonths.trim() !== '' && months == null) {
+        setFormError('Time interval must be a positive whole number of months.')
+        return
+      }
+    }
+
+    setIsSaving(true)
 
     try {
       const partLinks = parsePartLinksText(partLinksText)
+      const draft = {
+        title,
+        description: description.trim() || null,
+        part_links: partLinks,
+        maintenance_description: hasAnyMaintenanceField ? trimmedMaintenanceDescription : null,
+        maintenance_mileage_interval_miles: hasAnyMaintenanceField ? mileageIntervalMiles : null,
+        maintenance_time_interval_days: hasAnyMaintenanceField ? timeIntervalDays : null,
+      }
+
       let saved =
         isEditing && projectId
-          ? await updateProject(projectId, {
-              title,
-              description: description.trim() || null,
-              part_links: partLinks,
-            })
+          ? await updateProject(projectId, draft)
           : await createProjectForUser(user.id, {
               vehicle_id: vehicleId,
-              title,
-              description: description.trim() || null,
-              part_links: partLinks,
+              ...draft,
             })
 
       if (selectedImages.length > 0) {
@@ -158,6 +221,43 @@ export function ProjectFormPage() {
             </Box>
           ) : null}
         </Stack>
+
+        <Divider />
+
+        <Stack spacing={1}>
+          <Typography variant="h3">Maintenance interval</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Optional. Associate recurring service with this project (mileage, months, or both).
+          </Typography>
+        </Stack>
+        <TextField
+          label="Maintenance description"
+          value={maintenanceDescription}
+          onChange={(event) => setMaintenanceDescription(event.target.value)}
+          placeholder="Oil change, tire rotation…"
+        />
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              label="Mileage interval"
+              type="number"
+              value={mileageInterval}
+              onChange={(event) => setMileageInterval(event.target.value)}
+              helperText="Miles between services. Example: 5000"
+              slotProps={{ htmlInput: { min: 1 } }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              label="Time interval"
+              type="number"
+              value={timeIntervalMonths}
+              onChange={(event) => setTimeIntervalMonths(event.target.value)}
+              helperText="Months between services. Example: 6"
+              slotProps={{ htmlInput: { min: 1 } }}
+            />
+          </Grid>
+        </Grid>
 
         {formError ? <Alert severity="error">{formError}</Alert> : null}
         <Button type="submit" disabled={isSaving}>

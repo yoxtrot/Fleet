@@ -12,7 +12,6 @@ import { useAuth } from '../../app/AuthProvider'
 import { deleteVehicle, getVehicleById } from './vehiclesApi'
 import { VehiclePhoto } from './VehiclePhoto'
 import { ProjectsSection } from '../projects/ProjectsSection'
-import { MaintenanceSchedulesSection } from '../maintenance/MaintenanceSchedulesSection'
 import type { Vehicle } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
@@ -128,8 +127,6 @@ export function VehicleDetailPage() {
       </Stack>
 
       <ProjectsSection vehicleId={vehicleId} />
-
-      <MaintenanceSchedulesSection vehicleId={vehicleId} userId={user.id} />
     </PagePanel>
   )
 }

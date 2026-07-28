@@ -4,6 +4,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   Link,
   Stack,
   Typography,
@@ -11,7 +12,10 @@ import {
 import { useAuth } from '../../app/AuthProvider'
 import {
   deleteProject,
+  formatMaintenanceTimeInterval,
+  formatProjectMaintenanceInterval,
   getProjectById,
+  projectHasMaintenance,
   removeProjectImage,
   resolveProjectImageUrl,
   uploadProjectImages,
@@ -161,6 +165,35 @@ export function ProjectDetailPage() {
           Description
         </Typography>
         <Typography sx={{ whiteSpace: 'pre-wrap' }}>{project.description || '—'}</Typography>
+      </Box>
+
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h2" gutterBottom>
+          Maintenance interval
+        </Typography>
+        {projectHasMaintenance(project) ? (
+          <Stack spacing={1}>
+            <Typography sx={{ fontWeight: 600 }}>{project.maintenance_description}</Typography>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+              {project.maintenance_mileage_interval_miles != null ? (
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`Every ${project.maintenance_mileage_interval_miles.toLocaleString()} mi`}
+                />
+              ) : null}
+              {project.maintenance_time_interval_days != null ? (
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={formatMaintenanceTimeInterval(project.maintenance_time_interval_days)}
+                />
+              ) : null}
+            </Stack>
+          </Stack>
+        ) : (
+          <Typography color="text.secondary">No maintenance interval on this project.</Typography>
+        )}
       </Box>
 
       <Box sx={{ mb: 4 }}>

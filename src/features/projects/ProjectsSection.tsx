@@ -7,10 +7,11 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  Chip,
   Stack,
   Typography,
 } from '@mui/material'
-import { listProjectsForVehicle } from './projectsApi'
+import { formatProjectMaintenanceInterval, listProjectsForVehicle, projectHasMaintenance } from './projectsApi'
 import type { VehicleProject } from '../../lib/database.types'
 
 type ProjectsSectionProps = {
@@ -79,6 +80,16 @@ export function ProjectsSection({ vehicleId }: ProjectsSectionProps) {
                   {' · '}
                   {project.part_links.length} part link{project.part_links.length === 1 ? '' : 's'}
                 </Typography>
+                {projectHasMaintenance(project) ? (
+                  <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', gap: 1 }}>
+                    <Chip size="small" label={project.maintenance_description ?? 'Maintenance'} />
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={formatProjectMaintenanceInterval(project)}
+                    />
+                  </Stack>
+                ) : null}
               </CardContent>
             </CardActionArea>
           </Card>
