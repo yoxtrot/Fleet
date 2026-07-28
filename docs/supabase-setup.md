@@ -94,6 +94,11 @@ In Cursor, saying **update the database** should trigger the `update-database` s
 
 Project images are stored at `{user_id}/{project_id}/{uuid}.*`.
 
+## 5d. Enable maintenance schedules
+
+1. Apply [`supabase/migrations/20260728230000_maintenance_schedules.sql`](../supabase/migrations/20260728230000_maintenance_schedules.sql) via `npm run db:push` (preferred) or the SQL Editor.
+2. Confirm table `maintenance_schedules` exists with RLS enabled.
+
 ## 6. Create your account in the app
 
 1. Run the app: `npm run dev`

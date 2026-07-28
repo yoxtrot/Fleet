@@ -43,10 +43,11 @@ function fail(message) {
 }
 
 function runSupabase(args) {
-  const result = spawnSync('npx', ['supabase', ...args], {
+  const npmRunner = process.platform === 'win32' ? 'npx.cmd' : 'npx'
+  const result = spawnSync(npmRunner, ['supabase', ...args], {
     cwd: repoRoot,
     stdio: 'inherit',
-    shell: false,
+    shell: true,
     env: process.env,
   })
   if (result.error) fail(result.error.message)

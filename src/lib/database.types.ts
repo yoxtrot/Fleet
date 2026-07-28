@@ -55,6 +55,17 @@ export type VehicleProject = {
   updated_at: string
 }
 
+export type MaintenanceSchedule = {
+  id: string
+  user_id: string
+  vehicle_id: string
+  description: string
+  mileage_interval_miles: number | null
+  time_interval_days: number | null
+  created_at: string
+  updated_at: string
+}
+
 type VehiclesTable = {
   Row: Vehicle
   Insert: {
@@ -212,6 +223,39 @@ type VehicleProjectsTable = {
   ]
 }
 
+type MaintenanceSchedulesTable = {
+  Row: MaintenanceSchedule
+  Insert: {
+    id?: string
+    user_id: string
+    vehicle_id: string
+    description: string
+    mileage_interval_miles?: number | null
+    time_interval_days?: number | null
+    created_at?: string
+    updated_at?: string
+  }
+  Update: {
+    id?: string
+    user_id?: string
+    vehicle_id?: string
+    description?: string
+    mileage_interval_miles?: number | null
+    time_interval_days?: number | null
+    created_at?: string
+    updated_at?: string
+  }
+  Relationships: [
+    {
+      foreignKeyName: 'maintenance_schedules_vehicle_id_fkey'
+      columns: ['vehicle_id']
+      isOneToOne: false
+      referencedRelation: 'vehicles'
+      referencedColumns: ['id']
+    },
+  ]
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -219,6 +263,7 @@ export type Database = {
       maintenance_records: MaintenanceRecordsTable
       fix_research_notes: FixResearchNotesTable
       vehicle_projects: VehicleProjectsTable
+      maintenance_schedules: MaintenanceSchedulesTable
     }
     Views: Record<string, never>
     Functions: Record<string, never>
