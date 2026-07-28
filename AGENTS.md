@@ -17,8 +17,9 @@ Use these intentionally while working:
 | `fleet-domain` | Changing vehicle / maintenance / research behavior or schema vocabulary |
 | `add-supabase-table` | Adding a new Postgres table with RLS and a CRUD feature slice |
 | `auth-guard-check` | Verifying login, session, and protected routes |
+| `fleet-sprint` | Planning a sprint, adding tasks to the current sprint, or summarizing Linear cycle work |
 
-Invoke with `@skill-name` or by describing the matching task.
+Invoke with `@skill-name` or by describing the matching task (for example “help me plan a sprint”).
 
 ## Subagent habits to practice
 
