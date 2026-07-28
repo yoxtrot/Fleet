@@ -1,8 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
+import {
+  Alert,
+  Button,
+  Card,
+  CardActionArea,
+  CardContent,
+  Stack,
+  Typography,
+} from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser } from './vehiclesApi'
 import type { Vehicle } from '../../lib/database.types'
+import { PageLoadingState } from '../../shared/PageLoadingState'
+import { PagePanel } from '../../shared/PagePanel'
 
 export function VehicleListPage() {
   const { user } = useAuth()
@@ -30,36 +41,46 @@ export function VehicleListPage() {
     }
   }, [user])
 
-  if (isLoading) return <p className="page-status">Loading vehicles…</p>
+  if (isLoading) return <PageLoadingState label="Loading vehicles…" />
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1>Vehicles</h1>
-        <Link className="button-primary" to="/vehicles/new">
+    <PagePanel>
+      <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h1">Vehicles</Typography>
+        <Button component={RouterLink} to="/vehicles/new">
           Add vehicle
-        </Link>
-      </div>
-      {loadError ? <p className="form-error">{loadError}</p> : null}
+        </Button>
+      </Stack>
+
+      {loadError ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {loadError}
+        </Alert>
+      ) : null}
+
       {vehicles.length === 0 && !loadError ? (
-        <p className="muted">Your fleet is empty. Add a vehicle to get started.</p>
+        <Typography color="text.secondary">Your fleet is empty. Add a vehicle to get started.</Typography>
       ) : (
-        <ul className="card-list">
+        <Stack spacing={1.5}>
           {vehicles.map((vehicle) => (
-            <li key={vehicle.id}>
-              <Link to={`/vehicles/${vehicle.id}`} className="card-link">
-                <strong>{vehicle.nickname}</strong>
-                <span className="muted">
-                  {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
-                </span>
-                {vehicle.current_mileage != null ? (
-                  <span className="muted">{vehicle.current_mileage.toLocaleString()} mi</span>
-                ) : null}
-              </Link>
-            </li>
+            <Card key={vehicle.id} variant="outlined">
+              <CardActionArea component={RouterLink} to={`/vehicles/${vehicle.id}`}>
+                <CardContent>
+                  <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
+                  <Typography color="text.secondary">
+                    {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+                  </Typography>
+                  {vehicle.current_mileage != null ? (
+                    <Typography color="text.secondary" variant="body2">
+                      {vehicle.current_mileage.toLocaleString()} mi
+                    </Typography>
+                  ) : null}
+                </CardContent>
+              </CardActionArea>
+            </Card>
           ))}
-        </ul>
+        </Stack>
       )}
-    </div>
+    </PagePanel>
   )
 }
