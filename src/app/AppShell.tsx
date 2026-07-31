@@ -37,7 +37,15 @@ export function AppShell() {
       {isDemoMode ? (
         <Alert
           severity="info"
-          sx={{ borderRadius: 0, py: 0.5 }}
+          sx={{
+            borderRadius: 0,
+            py: 0.5,
+            bgcolor: 'rgba(200, 16, 46, 0.14)',
+            color: 'text.primary',
+            borderBottom: 1,
+            borderColor: 'divider',
+            '& .MuiAlert-icon': { color: 'primary.main' },
+          }}
           action={
             <Button color="inherit" size="small" onClick={() => exitDemoMode()}>
               Exit demo
@@ -47,14 +55,19 @@ export function AppShell() {
           Viewing demo garage (read-only)
         </Alert>
       ) : null}
-      <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <AppBar
+        position="sticky"
+        color="inherit"
+        elevation={0}
+        sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.default' }}
+      >
         <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 1 }}>
           <Box sx={{ mr: { md: 2 } }}>
             <Typography
               component={NavLink}
               to="/home"
               variant="h6"
-              sx={{ color: 'text.primary', textDecoration: 'none', fontWeight: 700 }}
+              sx={{ color: 'text.primary', textDecoration: 'none' }}
             >
               Fleet
             </Typography>

@@ -2,6 +2,7 @@ import { Link as RouterLink, Navigate } from 'react-router-dom'
 import { Box, Button, Link, Stack, Typography } from '@mui/material'
 import { keyframes } from '@mui/system'
 import { isDemoModeAvailable, useAuth } from '../../app/AuthProvider'
+import { fleetColors } from '../../app/theme'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 
 const fadeRise = keyframes`
@@ -33,6 +34,14 @@ const accentDraw = keyframes`
   }
 `
 
+const topLinkSx = {
+  color: 'text.primary',
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+  fontSize: '0.85rem',
+} as const
+
 export function LandingPage() {
   const { user, isLoadingSession, enterDemoMode } = useAuth()
   const showDemoLink = isDemoModeAvailable()
@@ -51,11 +60,8 @@ export function LandingPage() {
         minHeight: '100vh',
         position: 'relative',
         overflow: 'hidden',
-        color: '#f7f4ef',
-        bgcolor: '#14110f',
-        '--fleet-red': '#c8102e',
-        '--fleet-ash': '#f7f4ef',
-        '--fleet-ink': '#14110f',
+        color: 'text.primary',
+        bgcolor: 'background.default',
       }}
     >
       <Box
@@ -71,8 +77,7 @@ export function LandingPage() {
             content: '""',
             position: 'absolute',
             inset: 0,
-            background:
-              'linear-gradient(90deg, rgba(20,17,15,0.88) 0%, rgba(20,17,15,0.55) 42%, rgba(20,17,15,0.18) 100%), linear-gradient(180deg, rgba(20,17,15,0.45) 0%, rgba(20,17,15,0.15) 35%, rgba(20,17,15,0.72) 100%)',
+            background: `linear-gradient(90deg, rgba(20,17,15,0.88) 0%, rgba(20,17,15,0.55) 42%, rgba(20,17,15,0.18) 100%), linear-gradient(180deg, rgba(20,17,15,0.45) 0%, rgba(20,17,15,0.15) 35%, rgba(20,17,15,0.72) 100%)`,
           },
         }}
       />
@@ -97,19 +102,7 @@ export function LandingPage() {
             animation: `${fadeRise} 0.7s ease-out both`,
           }}
         >
-          <Link
-            component={RouterLink}
-            to="/login"
-            underline="hover"
-            sx={{
-              color: 'var(--fleet-ash)',
-              fontFamily: '"Manrope", sans-serif',
-              fontWeight: 600,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              fontSize: '0.85rem',
-            }}
-          >
+          <Link component={RouterLink} to="/login" underline="hover" sx={topLinkSx}>
             Login
           </Link>
           {showDemoLink ? (
@@ -119,16 +112,12 @@ export function LandingPage() {
               underline="hover"
               onClick={() => enterDemoMode()}
               sx={{
-                color: 'var(--fleet-ash)',
-                fontFamily: '"Manrope", sans-serif',
-                fontWeight: 600,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                fontSize: '0.85rem',
+                ...topLinkSx,
                 background: 'none',
                 border: 0,
                 cursor: 'pointer',
                 p: 0,
+                font: 'inherit',
               }}
             >
               Demo
@@ -165,7 +154,7 @@ export function LandingPage() {
             sx={{
               width: 88,
               height: 4,
-              bgcolor: 'var(--fleet-red)',
+              bgcolor: 'primary.main',
               mb: 2.5,
               transformOrigin: 'left center',
               animation: `${accentDraw} 0.8s ease-out 0.35s both`,
@@ -175,7 +164,6 @@ export function LandingPage() {
           <Typography
             component="h1"
             sx={{
-              fontFamily: '"Manrope", sans-serif',
               fontWeight: 700,
               fontSize: { xs: '1.35rem', sm: '1.7rem' },
               letterSpacing: '-0.02em',
@@ -189,7 +177,6 @@ export function LandingPage() {
 
           <Typography
             sx={{
-              fontFamily: '"Manrope", sans-serif',
               fontSize: { xs: '1rem', sm: '1.1rem' },
               lineHeight: 1.55,
               color: 'rgba(247,244,239,0.82)',
@@ -198,7 +185,7 @@ export function LandingPage() {
               animation: `${fadeRise} 0.8s ease-out 0.35s both`,
             }}
           >
-            Track vehicles, projects, and research in one personal garage workspace.
+            Track vehicles, projects, and fix research in one personal garage workspace.
           </Typography>
 
           <Stack
@@ -206,22 +193,7 @@ export function LandingPage() {
             spacing={1.5}
             sx={{ animation: `${fadeRise} 0.8s ease-out 0.45s both` }}
           >
-            <Button
-              component={RouterLink}
-              to="/login"
-              sx={{
-                px: 3,
-                py: 1.25,
-                bgcolor: 'var(--fleet-red)',
-                color: '#fff',
-                fontFamily: '"Manrope", sans-serif',
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                borderRadius: 1,
-                '&:hover': { bgcolor: '#a50d25' },
-              }}
-            >
+            <Button component={RouterLink} to="/login" sx={{ px: 3, py: 1.25 }}>
               Log in
             </Button>
             {showDemoLink ? (
@@ -232,14 +204,9 @@ export function LandingPage() {
                   px: 3,
                   py: 1.25,
                   borderColor: 'rgba(247,244,239,0.55)',
-                  color: 'var(--fleet-ash)',
-                  fontFamily: '"Manrope", sans-serif',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                  borderRadius: 1,
+                  color: fleetColors.ash,
                   '&:hover': {
-                    borderColor: 'var(--fleet-ash)',
+                    borderColor: fleetColors.ash,
                     bgcolor: 'rgba(247,244,239,0.08)',
                   },
                 }}

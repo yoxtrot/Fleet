@@ -1,7 +1,13 @@
+:root {
+  --fleet-red: #c8102e;
+  --fleet-ash: #f7f4ef;
+  --fleet-ink: #14110f;
+}
+
 body {
   min-width: 320px;
   background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 40%),
-    linear-gradient(180deg, #efe8dc 0%, #f5f1eb 40%, #ebe4d8 100%);
+    radial-gradient(circle at top left, rgba(200, 16, 46, 0.16), transparent 42%),
+    linear-gradient(180deg, #1a1614 0%, #14110f 48%, #0f0d0c 100%);
   background-attachment: fixed;
 }
