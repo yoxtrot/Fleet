@@ -18,7 +18,7 @@ import { PagePanel } from '../../shared/PagePanel'
 
 export function VehicleDetailPage() {
   const { vehicleId } = useParams()
-  const { user } = useAuth()
+  const { user, isDemoMode } = useAuth()
   const navigate = useNavigate()
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -85,14 +85,16 @@ export function VehicleDetailPage() {
             {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
-          <Button component={RouterLink} to={`/vehicles/${vehicle.id}/edit`} variant="outlined">
-            Edit
-          </Button>
-          <Button color="error" variant="outlined" onClick={() => void handleDelete()}>
-            Delete
-          </Button>
-        </Stack>
+        {!isDemoMode ? (
+          <Stack direction="row" spacing={1}>
+            <Button component={RouterLink} to={`/vehicles/${vehicle.id}/edit`} variant="outlined">
+              Edit
+            </Button>
+            <Button color="error" variant="outlined" onClick={() => void handleDelete()}>
+              Delete
+            </Button>
+          </Stack>
+        ) : null}
       </Stack>
 
       {vehicle.photo_path ? (

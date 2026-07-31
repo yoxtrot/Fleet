@@ -109,22 +109,38 @@ Project images are stored at `{user_id}/{project_id}/{uuid}.*`.
 
 Optional hardening for a personal app: after your account exists, disable new public signups in Auth settings so strangers cannot create accounts against your project.
 
-## 7. Sanity checklist
+## 7. Read-only demo garage
+
+The login page can expose a **Demo** link that loads `yoxtrot@gmail.com`’s garage without signing in. Demo viewers can browse but cannot create, edit, or delete.
+
+1. Look up that user’s UUID in Supabase → **Authentication → Users**.
+2. Add to `.env.local` (and Vercel env for production):
+
+```env
+VITE_DEMO_USER_ID=their-auth-user-uuid
+```
+
+3. Apply migration `20260731120000_demo_user_public_select.sql` (or run `npm run db:push`) so anon clients can SELECT that owner’s rows.
+4. Restart the app. Open `/login` and click **Demo**.
+
+## 8. Sanity checklist
 
 - [ ] `.env.local` has real URL + anon/publishable key (no secret keys)
 - [ ] Email auth enabled
-- [ ] Site URL points at localhost
+- [ ] Site URL points at localhost (and production domain when deployed)
 - [ ] Initial migration SQL ran without errors
 - [ ] Vehicle photos migration SQL ran without errors
 - [ ] You can sign up / sign in
 - [ ] You can add a vehicle and see it in the list
 - [ ] You can add/change a vehicle photo and see it on list and detail pages
+- [ ] Demo link loads the demo garage read-only when `VITE_DEMO_USER_ID` is set
 
 ## Common errors
 
 | Message / symptom | Likely fix |
 | --- | --- |
 | Supabase is not configured yet | Create `.env.local` and restart Vite |
+| Failed to execute 'fetch'… Invalid value | Anon key/URL has quotes or line breaks — paste a single-line value and redeploy |
 | relation "vehicles" does not exist | Run the migration SQL |
 | column "photo_path" does not exist | Run the vehicle photos migration SQL |
 | Bucket not found / storage upload failed | Run the vehicle photos migration SQL and confirm `vehicle-photos` exists |

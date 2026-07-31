@@ -16,6 +16,7 @@ import {
   type MaintenanceDraft,
 } from './maintenanceApi'
 import type { MaintenanceRecord } from '../../lib/database.types'
+import { useAuth } from '../../app/AuthProvider'
 
 type MaintenanceSectionProps = {
   vehicleId: string
@@ -35,6 +36,7 @@ function formatCost(cents: number | null) {
 }
 
 export function MaintenanceSection({ vehicleId, userId }: MaintenanceSectionProps) {
+  const { isDemoMode } = useAuth()
   const [records, setRecords] = useState<MaintenanceRecord[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
@@ -143,9 +145,11 @@ export function MaintenanceSection({ vehicleId, userId }: MaintenanceSectionProp
               </Typography>
               {record.notes ? <Typography sx={{ mt: 1 }}>{record.notes}</Typography> : null}
             </Box>
-            <Button color="error" variant="outlined" onClick={() => void handleDelete(record.id)}>
-              Delete
-            </Button>
+            {!isDemoMode ? (
+              <Button color="error" variant="outlined" onClick={() => void handleDelete(record.id)}>
+                Delete
+              </Button>
+            ) : null}
           </Box>
         ))}
       </Stack>
@@ -156,59 +160,63 @@ export function MaintenanceSection({ vehicleId, userId }: MaintenanceSectionProp
         </Typography>
       ) : null}
 
-      <Divider sx={{ mb: 3 }} />
+      {!isDemoMode ? (
+        <>
+          <Divider sx={{ mb: 3 }} />
 
-      <Typography variant="h3" gutterBottom>
-        Log work
-      </Typography>
-      <Stack component="form" spacing={2} onSubmit={handleSubmit}>
-        <TextField label="Title" value={title} onChange={(event) => setTitle(event.target.value)} required />
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 4 }}>
+          <Typography variant="h3" gutterBottom>
+            Log work
+          </Typography>
+          <Stack component="form" spacing={2} onSubmit={handleSubmit}>
+            <TextField label="Title" value={title} onChange={(event) => setTitle(event.target.value)} required />
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  label="Date"
+                  type="date"
+                  value={performedOn}
+                  onChange={(event) => setPerformedOn(event.target.value)}
+                  required
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  label="Mileage"
+                  type="number"
+                  value={mileage}
+                  onChange={(event) => setMileage(event.target.value)}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  label="Cost (USD)"
+                  type="number"
+                  slotProps={{ htmlInput: { step: '0.01' } }}
+                  value={costDollars}
+                  onChange={(event) => setCostDollars(event.target.value)}
+                />
+              </Grid>
+            </Grid>
             <TextField
-              label="Date"
-              type="date"
-              value={performedOn}
-              onChange={(event) => setPerformedOn(event.target.value)}
-              required
-              slotProps={{ inputLabel: { shrink: true } }}
+              label="Shop / DIY"
+              value={performedBy}
+              onChange={(event) => setPerformedBy(event.target.value)}
             />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
             <TextField
-              label="Mileage"
-              type="number"
-              value={mileage}
-              onChange={(event) => setMileage(event.target.value)}
+              label="Notes"
+              multiline
+              minRows={3}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
             />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <TextField
-              label="Cost (USD)"
-              type="number"
-              slotProps={{ htmlInput: { step: '0.01' } }}
-              value={costDollars}
-              onChange={(event) => setCostDollars(event.target.value)}
-            />
-          </Grid>
-        </Grid>
-        <TextField
-          label="Shop / DIY"
-          value={performedBy}
-          onChange={(event) => setPerformedBy(event.target.value)}
-        />
-        <TextField
-          label="Notes"
-          multiline
-          minRows={3}
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-        />
-        {formError ? <Alert severity="error">{formError}</Alert> : null}
-        <Button type="submit" disabled={isSaving}>
-          {isSaving ? 'Saving…' : 'Add maintenance'}
-        </Button>
-      </Stack>
+            {formError ? <Alert severity="error">{formError}</Alert> : null}
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? 'Saving…' : 'Add maintenance'}
+            </Button>
+          </Stack>
+        </>
+      ) : null}
     </Box>
   )
 }

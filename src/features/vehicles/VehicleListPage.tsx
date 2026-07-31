@@ -21,7 +21,7 @@ type VehicleListItem = {
 }
 
 export function VehicleListPage() {
-  const { user } = useAuth()
+  const { user, isDemoMode } = useAuth()
   const [vehicleItems, setVehicleItems] = useState<VehicleListItem[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -58,9 +58,11 @@ export function VehicleListPage() {
     <PagePanel>
       <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h1">Vehicles</Typography>
-        <Button component={RouterLink} to="/vehicles/new">
-          Add vehicle
-        </Button>
+        {!isDemoMode ? (
+          <Button component={RouterLink} to="/vehicles/new">
+            Add vehicle
+          </Button>
+        ) : null}
       </Stack>
 
       {loadError ? (

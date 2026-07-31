@@ -18,6 +18,7 @@ import {
   resolveProjectImageUrl,
 } from './projectsApi'
 import type { VehicleProject } from '../../lib/database.types'
+import { useAuth } from '../../app/AuthProvider'
 
 type ProjectsSectionProps = {
   vehicleId: string
@@ -29,6 +30,7 @@ type ProjectListItem = {
 }
 
 export function ProjectsSection({ vehicleId }: ProjectsSectionProps) {
+  const { isDemoMode } = useAuth()
   const [projectItems, setProjectItems] = useState<ProjectListItem[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -64,9 +66,11 @@ export function ProjectsSection({ vehicleId }: ProjectsSectionProps) {
     <Box component="section" sx={{ mb: 4 }}>
       <Stack direction="row" spacing={2} sx={{ mb: 2, justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h2">Projects</Typography>
-        <Button component={RouterLink} to={`/vehicles/${vehicleId}/projects/new`}>
-          Add project
-        </Button>
+        {!isDemoMode ? (
+          <Button component={RouterLink} to={`/vehicles/${vehicleId}/projects/new`}>
+            Add project
+          </Button>
+        ) : null}
       </Stack>
 
       {isLoading ? <Typography color="text.secondary">Loading projects…</Typography> : null}

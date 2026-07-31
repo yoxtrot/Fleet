@@ -25,7 +25,7 @@ import { PagePanel } from '../../shared/PagePanel'
 
 export function ProjectDetailPage() {
   const { vehicleId, projectId } = useParams()
-  const { user } = useAuth()
+  const { user, isDemoMode } = useAuth()
   const navigate = useNavigate()
   const [project, setProject] = useState<VehicleProject | null>(null)
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({})
@@ -139,18 +139,20 @@ export function ProjectDetailPage() {
           </Button>
           <Typography variant="h1">{project.title}</Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
-          <Button
-            component={RouterLink}
-            to={`/vehicles/${vehicleId}/projects/${project.id}/edit`}
-            variant="outlined"
-          >
-            Edit
-          </Button>
-          <Button color="error" variant="outlined" onClick={() => void handleDelete()}>
-            Delete
-          </Button>
-        </Stack>
+        {!isDemoMode ? (
+          <Stack direction="row" spacing={1}>
+            <Button
+              component={RouterLink}
+              to={`/vehicles/${vehicleId}/projects/${project.id}/edit`}
+              variant="outlined"
+            >
+              Edit
+            </Button>
+            <Button color="error" variant="outlined" onClick={() => void handleDelete()}>
+              Delete
+            </Button>
+          </Stack>
+        ) : null}
       </Stack>
 
       {actionError ? (
@@ -198,19 +200,21 @@ export function ProjectDetailPage() {
       <Box sx={{ mb: 4 }}>
         <Stack direction="row" spacing={2} sx={{ mb: 1.5, justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h2">Images</Typography>
-          <Button component="label" variant="outlined" disabled={isUploading}>
-            {isUploading ? 'Uploading…' : 'Add images'}
-            <input
-              hidden
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              onChange={(event) => {
-                void handleAddImages(event.target.files)
-                event.target.value = ''
-              }}
-            />
-          </Button>
+          {!isDemoMode ? (
+            <Button component="label" variant="outlined" disabled={isUploading}>
+              {isUploading ? 'Uploading…' : 'Add images'}
+              <input
+                hidden
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(event) => {
+                  void handleAddImages(event.target.files)
+                  event.target.value = ''
+                }}
+              />
+            </Button>
+          ) : null}
         </Stack>
         {project.image_paths.length === 0 ? (
           <Typography color="text.secondary">No images yet.</Typography>
@@ -241,15 +245,17 @@ export function ProjectDetailPage() {
                 ) : (
                   <Box sx={{ width: '100%', height: 180, borderRadius: 1, bgcolor: 'action.hover' }} />
                 )}
-                <Button
-                  size="small"
-                  color="error"
-                  variant="outlined"
-                  sx={{ mt: 1 }}
-                  onClick={() => void handleRemoveImage(imagePath)}
-                >
-                  Remove
-                </Button>
+                {!isDemoMode ? (
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="outlined"
+                    sx={{ mt: 1 }}
+                    onClick={() => void handleRemoveImage(imagePath)}
+                  >
+                    Remove
+                  </Button>
+                ) : null}
               </Box>
             ))}
           </Box>

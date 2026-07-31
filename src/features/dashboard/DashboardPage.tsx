@@ -24,7 +24,7 @@ type VehicleListItem = {
 }
 
 export function DashboardPage() {
-  const { user } = useAuth()
+  const { user, isDemoMode } = useAuth()
   const [vehicleItems, setVehicleItems] = useState<VehicleListItem[]>([])
   const [recentResearch, setRecentResearch] = useState<FixResearchNote[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -87,9 +87,11 @@ export function DashboardPage() {
     <PagePanel>
       <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h1">Home</Typography>
-        <Button component={RouterLink} to="/vehicles/new" variant="outlined">
-          Add vehicle
-        </Button>
+        {!isDemoMode ? (
+          <Button component={RouterLink} to="/vehicles/new" variant="outlined">
+            Add vehicle
+          </Button>
+        ) : null}
       </Stack>
 
       <Grid container spacing={2} sx={{ mb: 4 }}>
@@ -161,9 +163,11 @@ export function DashboardPage() {
         <section>
           <Stack direction="row" sx={{ mb: 1, justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h2">Recent research</Typography>
-            <Button component={RouterLink} to="/research/new" size="small" variant="text">
-              New note
-            </Button>
+            {!isDemoMode ? (
+              <Button component={RouterLink} to="/research/new" size="small" variant="text">
+                New note
+              </Button>
+            ) : null}
           </Stack>
           {recentResearch.length === 0 ? (
             <Typography color="text.secondary">No research notes yet.</Typography>

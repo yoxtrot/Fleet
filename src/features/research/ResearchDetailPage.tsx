@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
-import {
-  Alert,
-  Box,
-  Button,
-  Divider,
-  Stack,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, Divider, Stack, Typography } from '@mui/material'
+import { useAuth } from '../../app/AuthProvider'
 import { deleteResearchNote, getResearchNoteById } from './researchApi'
 import { getVehicleById } from '../vehicles/vehiclesApi'
 import type { FixResearchNote } from '../../lib/database.types'
@@ -17,6 +11,7 @@ import { PagePanel } from '../../shared/PagePanel'
 export function ResearchDetailPage() {
   const { noteId } = useParams()
   const navigate = useNavigate()
+  const { isDemoMode } = useAuth()
   const [note, setNote] = useState<FixResearchNote | null>(null)
   const [vehicleNickname, setVehicleNickname] = useState<string | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -93,14 +88,16 @@ export function ResearchDetailPage() {
           <Typography variant="h1">{note.title}</Typography>
           <Typography color="text.secondary">{vehicleNickname ?? 'No linked vehicle'}</Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
-          <Button component={RouterLink} to={`/research/${note.id}/edit`} variant="outlined">
-            Edit
-          </Button>
-          <Button color="error" variant="outlined" onClick={() => void handleDelete()}>
-            Delete
-          </Button>
-        </Stack>
+        {!isDemoMode ? (
+          <Stack direction="row" spacing={1}>
+            <Button component={RouterLink} to={`/research/${note.id}/edit`} variant="outlined">
+              Edit
+            </Button>
+            <Button color="error" variant="outlined" onClick={() => void handleDelete()}>
+              Delete
+            </Button>
+          </Stack>
+        ) : null}
       </Stack>
 
       <Stack spacing={2} divider={<Divider flexItem />}>

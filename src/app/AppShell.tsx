@@ -1,4 +1,5 @@
 import {
+  Alert,
   AppBar,
   Box,
   Button,
@@ -23,10 +24,23 @@ const navLinkSx = {
 }
 
 export function AppShell() {
-  const { user, signOut } = useAuth()
+  const { user, isDemoMode, exitDemoMode, signOut } = useAuth()
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
+      {isDemoMode ? (
+        <Alert
+          severity="info"
+          sx={{ borderRadius: 0, py: 0.5 }}
+          action={
+            <Button color="inherit" size="small" onClick={() => exitDemoMode()}>
+              Exit demo
+            </Button>
+          }
+        >
+          Viewing demo garage (read-only)
+        </Alert>
+      ) : null}
       <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 1 }}>
           <Box sx={{ mr: { md: 2 } }}>
@@ -59,8 +73,12 @@ export function AppShell() {
             <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
               {user?.email}
             </Typography>
-            <Button variant="outlined" color="inherit" onClick={() => void signOut()}>
-              Sign out
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={() => void (isDemoMode ? exitDemoMode() : signOut())}
+            >
+              {isDemoMode ? 'Exit demo' : 'Sign out'}
             </Button>
           </Stack>
         </Toolbar>

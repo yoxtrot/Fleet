@@ -8,18 +8,19 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useAuth } from '../../app/AuthProvider'
+import { isDemoModeAvailable, useAuth } from '../../app/AuthProvider'
 import { isSupabaseConfigured } from '../../lib/supabase'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
 
 export function LoginPage() {
-  const { user, isLoadingSession, signInWithEmail, signUpWithEmail } = useAuth()
+  const { user, isLoadingSession, enterDemoMode, signInWithEmail, signUpWithEmail } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
   const [formMessage, setFormMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const showDemoLink = isDemoModeAvailable()
 
   if (!isSupabaseConfigured) {
     return (
@@ -76,6 +77,13 @@ export function LoginPage() {
   return (
     <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 2 }}>
       <PagePanel sx={{ maxWidth: 420 }}>
+        {showDemoLink ? (
+          <Stack direction="row" sx={{ mb: 1, justifyContent: 'flex-end' }}>
+            <Button variant="text" size="small" onClick={() => enterDemoMode()}>
+              Demo
+            </Button>
+          </Stack>
+        ) : null}
         <Typography variant="h1" gutterBottom>
           Fleet
         </Typography>

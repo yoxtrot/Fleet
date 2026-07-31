@@ -22,7 +22,7 @@ import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
 
 export function ResearchListPage() {
-  const { user } = useAuth()
+  const { user, isDemoMode } = useAuth()
   const [notes, setNotes] = useState<FixResearchNote[]>([])
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [vehicleFilter, setVehicleFilter] = useState('all')
@@ -72,9 +72,11 @@ export function ResearchListPage() {
     <PagePanel>
       <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h1">Fix research</Typography>
-        <Button component={RouterLink} to="/research/new">
-          New note
-        </Button>
+        {!isDemoMode ? (
+          <Button component={RouterLink} to="/research/new">
+            New note
+          </Button>
+        ) : null}
       </Stack>
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
