@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser, resolveVehiclePhotoUrl } from './vehiclesApi'
+import { formatVehicleKind } from './vehicleTypes'
 import { VehiclePhotoThumb } from './VehiclePhoto'
 import type { Vehicle } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
@@ -84,6 +85,8 @@ export function VehicleListPage() {
                   <Box sx={{ minWidth: 0 }}>
                     <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
                     <Typography color="text.secondary">
+                      {formatVehicleKind(vehicle.vehicle_type, vehicle.vehicle_subtype)}
+                      {' · '}
                       {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
                     </Typography>
                     {vehicle.current_mileage != null ? (

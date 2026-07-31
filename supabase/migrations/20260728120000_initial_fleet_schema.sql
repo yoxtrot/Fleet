@@ -9,11 +9,22 @@ create table if not exists public.vehicles (
   year integer,
   make text not null,
   model text not null,
-  vin text,
+  vehicle_type text not null default 'car'
+    check (vehicle_type in ('car', 'bike', 'motorcycle')),
+  vehicle_subtype text
+    check (
+      vehicle_subtype is null
+      or vehicle_subtype in ('road', 'gravel', 'mountain', 'street', 'dirt_bike')
+    ),
   current_mileage integer,
   notes text,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint vehicles_type_subtype_consistency_check check (
+    (vehicle_type = 'car' and vehicle_subtype is null)
+    or (vehicle_type = 'bike' and vehicle_subtype in ('road', 'gravel', 'mountain'))
+    or (vehicle_type = 'motorcycle' and vehicle_subtype in ('street', 'dirt_bike'))
+  )
 );
 
 create table if not exists public.maintenance_records (

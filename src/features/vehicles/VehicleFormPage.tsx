@@ -4,8 +4,12 @@ import {
   Alert,
   Box,
   Button,
+  FormControl,
   FormControlLabel,
   Grid,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   Switch,
   Typography,
@@ -20,6 +24,15 @@ import {
   uploadVehiclePhoto,
   type VehicleDraft,
 } from './vehiclesApi'
+import {
+  isValidVehicleSubtype,
+  subtypesForVehicleType,
+  VEHICLE_SUBTYPE_LABELS,
+  VEHICLE_TYPE_LABELS,
+  VEHICLE_TYPES,
+  type VehicleSubtype,
+  type VehicleType,
+} from './vehicleTypes'
 import { VehiclePhotoCropDialog } from './VehiclePhotoCropDialog'
 import { ClickToEditField } from '../../shared/ClickToEditField'
 import { PageLoadingState } from '../../shared/PageLoadingState'
@@ -31,7 +44,8 @@ const emptyDraft: VehicleDraft = {
   year: null,
   make: '',
   model: '',
-  vin: null,
+  vehicle_type: 'car',
+  vehicle_subtype: null,
   current_mileage: null,
   notes: null,
 }
@@ -83,11 +97,25 @@ export function VehicleFormPage() {
       return false
     }
 
+    if (!isValidVehicleSubtype(draft.vehicle_type, draft.vehicle_subtype)) {
+      setFormError(
+        draft.vehicle_type === 'car'
+          ? 'Cars do not use a subcategory.'
+          : 'Choose a subcategory for this vehicle type.',
+      )
+      return false
+    }
+
+    const payload: VehicleDraft = {
+      ...draft,
+      vehicle_subtype: draft.vehicle_type === 'car' ? null : draft.vehicle_subtype,
+    }
+
     try {
       let saved =
         isEditing && vehicleId
-          ? await updateVehicle(vehicleId, draft)
-          : await createVehicleForUser(user.id, draft)
+          ? await updateVehicle(vehicleId, payload)
+          : await createVehicleForUser(user.id, payload)
 
       if (photoState.selectedPhoto) {
         saved = await uploadVehiclePhoto(user.id, saved.id, photoState.selectedPhoto)
@@ -96,7 +124,8 @@ export function VehicleFormPage() {
       }
 
       savedIdRef.current = saved.id
-      setBaseline(draft)
+      setBaseline(payload)
+      setDraft(payload)
       setPhotoState(emptyPhotoState)
       setExistingPhotoPath(saved.photo_path)
       setExistingPhotoUrl(await resolveVehiclePhotoUrl(saved.photo_path))
@@ -124,7 +153,8 @@ export function VehicleFormPage() {
           year: vehicle.year,
           make: vehicle.make,
           model: vehicle.model,
-          vin: vehicle.vin,
+          vehicle_type: vehicle.vehicle_type,
+          vehicle_subtype: vehicle.vehicle_subtype,
           current_mileage: vehicle.current_mileage,
           notes: vehicle.notes,
         }
@@ -265,6 +295,62 @@ export function VehicleFormPage() {
           locked={isDemoMode}
         />
         <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: draft.vehicle_type === 'car' ? 12 : 6 }}>
+            <FormControl fullWidth size="small" disabled={isDemoMode}>
+              <InputLabel id="vehicle-type-label">Type</InputLabel>
+              <Select
+                labelId="vehicle-type-label"
+                label="Type"
+                value={draft.vehicle_type}
+                onChange={(event) => {
+                  const nextType = event.target.value as VehicleType
+                  const allowed = subtypesForVehicleType(nextType)
+                  setDraft({
+                    ...draft,
+                    vehicle_type: nextType,
+                    vehicle_subtype:
+                      nextType === 'car'
+                        ? null
+                        : allowed.includes(draft.vehicle_subtype as VehicleSubtype)
+                          ? draft.vehicle_subtype
+                          : allowed[0] ?? null,
+                  })
+                }}
+              >
+                {VEHICLE_TYPES.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {VEHICLE_TYPE_LABELS[type]}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          {draft.vehicle_type !== 'car' ? (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FormControl fullWidth size="small" disabled={isDemoMode}>
+                <InputLabel id="vehicle-subtype-label">Category</InputLabel>
+                <Select
+                  labelId="vehicle-subtype-label"
+                  label="Category"
+                  value={draft.vehicle_subtype ?? ''}
+                  onChange={(event) =>
+                    setDraft({
+                      ...draft,
+                      vehicle_subtype: (event.target.value || null) as VehicleSubtype | null,
+                    })
+                  }
+                >
+                  {subtypesForVehicleType(draft.vehicle_type).map((subtype) => (
+                    <MenuItem key={subtype} value={subtype}>
+                      {VEHICLE_SUBTYPE_LABELS[subtype]}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          ) : null}
+        </Grid>
+        <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 4 }}>
             <ClickToEditField
               label="Year"
@@ -293,12 +379,6 @@ export function VehicleFormPage() {
             />
           </Grid>
         </Grid>
-        <ClickToEditField
-          label="VIN"
-          value={draft.vin ?? ''}
-          onChange={(event) => setDraft({ ...draft, vin: event.target.value || null })}
-          locked={isDemoMode}
-        />
         <ClickToEditField
           label="Current mileage"
           type="number"

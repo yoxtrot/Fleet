@@ -55,14 +55,6 @@ export function ClickToEditField({
         '& .MuiInputBase-root': {
           cursor: locked ? 'default' : editing ? 'text' : 'pointer',
         },
-        ...(!editing && !locked
-          ? {
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderStyle: 'dashed',
-                borderColor: 'rgba(247, 244, 239, 0.22)',
-              },
-            }
-          : null),
         ...sx,
       }}
     />

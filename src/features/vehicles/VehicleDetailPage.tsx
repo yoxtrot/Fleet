@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { deleteVehicle, getVehicleById } from './vehiclesApi'
+import { formatVehicleKind } from './vehicleTypes'
 import { VehiclePhoto } from './VehiclePhoto'
 import { ProjectsSection } from '../projects/ProjectsSection'
 import type { Vehicle } from '../../lib/database.types'
@@ -82,6 +83,8 @@ export function VehicleDetailPage() {
           </Button>
           <Typography variant="h1">{vehicle.nickname}</Typography>
           <Typography color="text.secondary">
+            {formatVehicleKind(vehicle.vehicle_type, vehicle.vehicle_subtype)}
+            {' · '}
             {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
           </Typography>
         </Box>
@@ -106,9 +109,9 @@ export function VehicleDetailPage() {
       <Stack spacing={2} sx={{ mb: 4 }}>
         <Box>
           <Typography variant="overline" color="text.secondary">
-            VIN
+            Type
           </Typography>
-          <Typography>{vehicle.vin || '—'}</Typography>
+          <Typography>{formatVehicleKind(vehicle.vehicle_type, vehicle.vehicle_subtype)}</Typography>
         </Box>
         <Divider />
         <Box>

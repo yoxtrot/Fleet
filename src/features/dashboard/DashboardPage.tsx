@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser, resolveVehiclePhotoUrl } from '../vehicles/vehiclesApi'
+import { formatVehicleKind } from '../vehicles/vehicleTypes'
 import { VehiclePhotoThumb } from '../vehicles/VehiclePhoto'
 import { listRecentResearchForUser } from '../research/researchApi'
 import type { Vehicle, FixResearchNote } from '../../lib/database.types'
@@ -132,6 +133,8 @@ export function DashboardPage() {
                       <Box sx={{ minWidth: 0 }}>
                         <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
                         <Typography color="text.secondary">
+                          {formatVehicleKind(vehicle.vehicle_type, vehicle.vehicle_subtype)}
+                          {' · '}
                           {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
                         </Typography>
                       </Box>

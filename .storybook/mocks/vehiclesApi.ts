@@ -8,7 +8,8 @@ export type VehicleDraft = {
   year: number | null
   make: string
   model: string
-  vin: string | null
+  vehicle_type: 'car' | 'bike' | 'motorcycle'
+  vehicle_subtype: 'road' | 'gravel' | 'mountain' | 'street' | 'dirt_bike' | null
   current_mileage: number | null
   notes: string | null
 }
