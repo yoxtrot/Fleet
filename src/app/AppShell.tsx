@@ -9,7 +9,7 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
 
 const navLinkSx = {
@@ -25,6 +25,12 @@ const navLinkSx = {
 
 export function AppShell() {
   const { user, isDemoMode, exitDemoMode, signOut } = useAuth()
+  const navigate = useNavigate()
+
+  function handleDemoLogin() {
+    exitDemoMode()
+    navigate('/login')
+  }
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -46,7 +52,7 @@ export function AppShell() {
           <Box sx={{ mr: { md: 2 } }}>
             <Typography
               component={NavLink}
-              to="/"
+              to="/home"
               variant="h6"
               sx={{ color: 'text.primary', textDecoration: 'none', fontWeight: 700 }}
             >
@@ -58,7 +64,7 @@ export function AppShell() {
           </Box>
 
           <Stack direction="row" spacing={2} sx={{ flexGrow: 1 }}>
-            <Link component={NavLink} to="/" end sx={navLinkSx}>
+            <Link component={NavLink} to="/home" end sx={navLinkSx}>
               Home
             </Link>
             <Link component={NavLink} to="/vehicles" sx={navLinkSx}>
@@ -70,16 +76,24 @@ export function AppShell() {
           </Stack>
 
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              {user?.email}
-            </Typography>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={() => void (isDemoMode ? exitDemoMode() : signOut())}
-            >
-              {isDemoMode ? 'Exit demo' : 'Sign out'}
-            </Button>
+            {isDemoMode ? (
+              <Button variant="outlined" color="inherit" onClick={handleDemoLogin}>
+                Login
+              </Button>
+            ) : (
+              <>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ display: { xs: 'none', sm: 'block' } }}
+                >
+                  {user?.email}
+                </Typography>
+                <Button variant="outlined" color="inherit" onClick={() => void signOut()}>
+                  Sign out
+                </Button>
+              </>
+            )}
           </Stack>
         </Toolbar>
       </AppBar>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link as RouterLink, Navigate } from 'react-router-dom'
 import {
   Alert,
   Box,
@@ -46,7 +46,7 @@ export function LoginPage() {
   }
 
   if (user) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/home" replace />
   }
 
   async function handleSignIn(event: FormEvent) {
@@ -78,12 +78,21 @@ export function LoginPage() {
     <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 2 }}>
       <PagePanel sx={{ maxWidth: 420 }}>
         {showDemoLink ? (
-          <Stack direction="row" sx={{ mb: 1, justifyContent: 'flex-end' }}>
+          <Stack direction="row" sx={{ mb: 1, justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button component={RouterLink} to="/" variant="text" size="small">
+              Fleet
+            </Button>
             <Button variant="text" size="small" onClick={() => enterDemoMode()}>
               Demo
             </Button>
           </Stack>
-        ) : null}
+        ) : (
+          <Stack direction="row" sx={{ mb: 1, justifyContent: 'flex-start' }}>
+            <Button component={RouterLink} to="/" variant="text" size="small">
+              Fleet
+            </Button>
+          </Stack>
+        )}
         <Typography variant="h1" gutterBottom>
           Fleet
         </Typography>

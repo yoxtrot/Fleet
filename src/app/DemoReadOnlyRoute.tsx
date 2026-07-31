@@ -24,5 +24,5 @@ export function DemoReadOnlyRoute() {
   if (location.pathname.startsWith('/vehicles')) {
     return <Navigate to="/vehicles" replace />
   }
-  return <Navigate to="/" replace />
+  return <Navigate to="/home" replace />
 }

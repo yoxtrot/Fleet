@@ -3,6 +3,7 @@ import { AuthProvider } from './AuthProvider'
 import { AppShell } from './AppShell'
 import { DemoReadOnlyRoute } from './DemoReadOnlyRoute'
 import { ProtectedRoute } from './ProtectedRoute'
+import { LandingPage } from '../features/landing/LandingPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { VehicleListPage } from '../features/vehicles/VehicleListPage'
@@ -19,10 +20,11 @@ export function AppRouter() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
-              <Route index element={<DashboardPage />} />
+              <Route path="home" element={<DashboardPage />} />
               <Route path="vehicles" element={<VehicleListPage />} />
               <Route path="vehicles/:vehicleId" element={<VehicleDetailPage />} />
               <Route path="vehicles/:vehicleId/projects/:projectId" element={<ProjectDetailPage />} />
