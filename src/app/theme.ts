@@ -5,9 +5,11 @@ export const fleetColors = {
   red: '#c8102e',
   redHover: '#a50d25',
   ash: '#f7f4ef',
-  ink: '#14110f',
-  inkElevated: '#1c1816',
-  muted: '#a8a29a',
+  /** App canvas — mid charcoal, not near-black */
+  ink: '#2f2e2c',
+  /** Raised surfaces (panels, cards) */
+  inkElevated: '#3d3c3a',
+  muted: '#b5b0a8',
 } as const
 
 export const fleetTheme = createTheme({
@@ -33,10 +35,10 @@ export const fleetTheme = createTheme({
       primary: fleetColors.ash,
       secondary: fleetColors.muted,
     },
-    divider: 'rgba(247, 244, 239, 0.12)',
+    divider: 'rgba(247, 244, 239, 0.14)',
     action: {
-      hover: 'rgba(247, 244, 239, 0.06)',
-      selected: 'rgba(200, 16, 46, 0.16)',
+      hover: 'rgba(247, 244, 239, 0.08)',
+      selected: 'rgba(200, 16, 46, 0.18)',
     },
   },
   typography: {
@@ -94,7 +96,7 @@ export const fleetTheme = createTheme({
           borderRadius: 8,
         },
         outlined: {
-          borderColor: 'rgba(247, 244, 239, 0.28)',
+          borderColor: 'rgba(247, 244, 239, 0.32)',
         },
       },
     },
@@ -119,7 +121,7 @@ export const fleetTheme = createTheme({
       },
       styleOverrides: {
         outlined: {
-          borderColor: 'rgba(247, 244, 239, 0.12)',
+          borderColor: 'rgba(247, 244, 239, 0.14)',
         },
       },
     },

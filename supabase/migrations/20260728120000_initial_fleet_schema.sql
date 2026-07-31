@@ -1,4 +1,4 @@
--- Fleet MVP schema: vehicles, maintenance, and fix research with RLS
+-- Fleet MVP schema: vehicles, maintenance, and research with RLS
 
 create extension if not exists pgcrypto;
 

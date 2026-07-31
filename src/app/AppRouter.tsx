@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './AuthProvider'
 import { AppShell } from './AppShell'
 import { DemoReadOnlyRoute } from './DemoReadOnlyRoute'
@@ -15,38 +15,49 @@ import { ResearchListPage } from '../features/research/ResearchListPage'
 import { ResearchFormPage } from '../features/research/ResearchFormPage'
 import { ResearchDetailPage } from '../features/research/ResearchDetailPage'
 
+const router = createBrowserRouter([
+  { path: '/', element: <LandingPage /> },
+  { path: '/login', element: <LoginPage /> },
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <AppShell />,
+        children: [
+          { path: 'home', element: <DashboardPage /> },
+          { path: 'vehicles', element: <VehicleListPage /> },
+          { path: 'vehicles/:vehicleId', element: <VehicleDetailPage /> },
+          {
+            path: 'vehicles/:vehicleId/projects/:projectId',
+            element: <ProjectDetailPage />,
+          },
+          { path: 'research', element: <ResearchListPage /> },
+          { path: 'research/:noteId', element: <ResearchDetailPage /> },
+          {
+            element: <DemoReadOnlyRoute />,
+            children: [
+              { path: 'vehicles/new', element: <VehicleFormPage /> },
+              { path: 'vehicles/:vehicleId/edit', element: <VehicleFormPage /> },
+              { path: 'vehicles/:vehicleId/projects/new', element: <ProjectFormPage /> },
+              {
+                path: 'vehicles/:vehicleId/projects/:projectId/edit',
+                element: <ProjectFormPage />,
+              },
+              { path: 'research/new', element: <ResearchFormPage /> },
+              { path: 'research/:noteId/edit', element: <ResearchFormPage /> },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  { path: '*', element: <Navigate to="/" replace /> },
+])
+
 export function AppRouter() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<ProtectedRoute />}>
-            <Route element={<AppShell />}>
-              <Route path="home" element={<DashboardPage />} />
-              <Route path="vehicles" element={<VehicleListPage />} />
-              <Route path="vehicles/:vehicleId" element={<VehicleDetailPage />} />
-              <Route path="vehicles/:vehicleId/projects/:projectId" element={<ProjectDetailPage />} />
-              <Route path="research" element={<ResearchListPage />} />
-              <Route path="research/:noteId" element={<ResearchDetailPage />} />
-
-              <Route element={<DemoReadOnlyRoute />}>
-                <Route path="vehicles/new" element={<VehicleFormPage />} />
-                <Route path="vehicles/:vehicleId/edit" element={<VehicleFormPage />} />
-                <Route path="vehicles/:vehicleId/projects/new" element={<ProjectFormPage />} />
-                <Route
-                  path="vehicles/:vehicleId/projects/:projectId/edit"
-                  element={<ProjectFormPage />}
-                />
-                <Route path="research/new" element={<ResearchFormPage />} />
-                <Route path="research/:noteId/edit" element={<ResearchFormPage />} />
-              </Route>
-            </Route>
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </AuthProvider>
   )
 }

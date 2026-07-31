@@ -2,7 +2,7 @@
 name: fleet-domain
 description: >-
   Explains Fleet garage domain language and schema for vehicles, maintenance
-  records, and fix research notes. Use when changing vehicle, maintenance, or
+  records, and research notes. Use when changing vehicle, maintenance, or
   research features, migrations, or API helpers.
 ---
 

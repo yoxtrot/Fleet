@@ -71,7 +71,7 @@ export function ResearchListPage() {
   return (
     <PagePanel>
       <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h1">Fix research</Typography>
+        <Typography variant="h1">Research</Typography>
         {!isDemoMode ? (
           <Button component={RouterLink} to="/research/new">
             New note

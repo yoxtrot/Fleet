@@ -29,7 +29,7 @@ Treat these (and close variants) as explicit requests to use this workflow:
 
 ## Workspace conventions
 
-- **Product**: Fleet personal garage app (vehicles, maintenance, fix research, auth/Supabase, MUI UI)
+- **Product**: Fleet personal garage app (vehicles, maintenance, research, auth/Supabase, MUI UI)
 - **Issue titles**: short, actionable (`Add maintenance date filter`, not `Stuff`)
 - **Descriptions**: problem, goal, and acceptance checks when useful
 - **Labels / tags** (create if missing): `frontend`, `backend`, `auth`, `docs`, `chore`, `bug`

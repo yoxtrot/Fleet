@@ -1,15 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
-import {
-  Alert,
-  Box,
-  Button,
-  Divider,
-  Grid,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { Alert, Box, Button, Divider, Grid, Stack, Typography } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import {
   createProjectForUser,
@@ -21,8 +12,28 @@ import {
   updateProject,
   uploadProjectImages,
 } from './projectsApi'
+import { ClickToEditField } from '../../shared/ClickToEditField'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
+import { snapshotsDiffer, useSaveOnExit } from '../../shared/useSaveOnExit'
+
+type ProjectFormSnapshot = {
+  title: string
+  description: string
+  partLinksText: string
+  maintenanceDescription: string
+  mileageInterval: string
+  timeIntervalMonths: string
+}
+
+const emptySnapshot: ProjectFormSnapshot = {
+  title: '',
+  description: '',
+  partLinksText: '',
+  maintenanceDescription: '',
+  mileageInterval: '',
+  timeIntervalMonths: '',
+}
 
 function parseOptionalPositiveInteger(value: string) {
   if (value.trim() === '') return null
@@ -34,108 +45,61 @@ function parseOptionalPositiveInteger(value: string) {
 export function ProjectFormPage() {
   const { vehicleId, projectId } = useParams()
   const isEditing = Boolean(projectId)
-  const { user } = useAuth()
-  const navigate = useNavigate()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [partLinksText, setPartLinksText] = useState('')
-  const [maintenanceDescription, setMaintenanceDescription] = useState('')
-  const [mileageInterval, setMileageInterval] = useState('')
-  const [timeIntervalMonths, setTimeIntervalMonths] = useState('')
+  const { user, isDemoMode } = useAuth()
+  const [form, setForm] = useState<ProjectFormSnapshot>(emptySnapshot)
+  const [baseline, setBaseline] = useState<ProjectFormSnapshot>(emptySnapshot)
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const [formError, setFormError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(isEditing)
-  const [isSaving, setIsSaving] = useState(false)
+  const savedIdRef = useRef<string | null>(projectId ?? null)
 
-  useEffect(() => {
-    const urls = selectedImages.map((file) => URL.createObjectURL(file))
-    setImagePreviewUrls(urls)
-    return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url))
-    }
-  }, [selectedImages])
+  const isDirty =
+    !isDemoMode && (snapshotsDiffer(form, baseline) || selectedImages.length > 0)
 
-  useEffect(() => {
-    if (!projectId) return
-    let isMounted = true
-
-    getProjectById(projectId)
-      .then((project) => {
-        if (!isMounted) return
-        setTitle(project.title)
-        setDescription(project.description ?? '')
-        setPartLinksText(formatPartLinksText(project.part_links))
-        setMaintenanceDescription(project.maintenance_description ?? '')
-        setMileageInterval(
-          project.maintenance_mileage_interval_miles != null
-            ? String(project.maintenance_mileage_interval_miles)
-            : '',
-        )
-        if (project.maintenance_time_interval_days != null) {
-          const months = daysToMonths(project.maintenance_time_interval_days)
-          setTimeIntervalMonths(
-            months != null
-              ? String(months)
-              : String(Math.round(project.maintenance_time_interval_days / 30)),
-          )
-        } else {
-          setTimeIntervalMonths('')
-        }
-      })
-      .catch((error: unknown) => {
-        if (isMounted) setFormError(error instanceof Error ? error.message : 'Failed to load project')
-      })
-      .finally(() => {
-        if (isMounted) setIsLoading(false)
-      })
-
-    return () => {
-      isMounted = false
-    }
-  }, [projectId])
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!user || !vehicleId) return
+  const persist = useCallback(async () => {
+    if (!user || !vehicleId || isDemoMode) return true
     setFormError(null)
 
-    const mileageIntervalMiles = parseOptionalPositiveInteger(mileageInterval)
-    const months = parseOptionalPositiveInteger(timeIntervalMonths)
+    if (!form.title.trim()) {
+      setFormError('Title is required.')
+      return false
+    }
+
+    const mileageIntervalMiles = parseOptionalPositiveInteger(form.mileageInterval)
+    const months = parseOptionalPositiveInteger(form.timeIntervalMonths)
     const timeIntervalDays = months != null ? monthsToDays(months) : null
-    const trimmedMaintenanceDescription = maintenanceDescription.trim()
+    const trimmedMaintenanceDescription = form.maintenanceDescription.trim()
 
     const hasAnyMaintenanceField =
       trimmedMaintenanceDescription !== '' ||
-      mileageInterval.trim() !== '' ||
-      timeIntervalMonths.trim() !== ''
+      form.mileageInterval.trim() !== '' ||
+      form.timeIntervalMonths.trim() !== ''
 
     if (hasAnyMaintenanceField) {
       if (!trimmedMaintenanceDescription) {
         setFormError('Add a maintenance description, or clear the maintenance interval fields.')
-        return
+        return false
       }
       if (mileageIntervalMiles == null && timeIntervalDays == null) {
         setFormError('Set a mileage interval, a time interval (months), or both for maintenance.')
-        return
+        return false
       }
-      if (mileageInterval.trim() !== '' && mileageIntervalMiles == null) {
+      if (form.mileageInterval.trim() !== '' && mileageIntervalMiles == null) {
         setFormError('Mileage interval must be a positive whole number.')
-        return
+        return false
       }
-      if (timeIntervalMonths.trim() !== '' && months == null) {
+      if (form.timeIntervalMonths.trim() !== '' && months == null) {
         setFormError('Time interval must be a positive whole number of months.')
-        return
+        return false
       }
     }
 
-    setIsSaving(true)
-
     try {
-      const partLinks = parsePartLinksText(partLinksText)
+      const partLinks = parsePartLinksText(form.partLinksText)
       const draft = {
-        title,
-        description: description.trim() || null,
+        title: form.title.trim(),
+        description: form.description.trim() || null,
         part_links: partLinks,
         maintenance_description: hasAnyMaintenanceField ? trimmedMaintenanceDescription : null,
         maintenance_mileage_interval_miles: hasAnyMaintenanceField ? mileageIntervalMiles : null,
@@ -154,53 +118,134 @@ export function ProjectFormPage() {
         saved = await uploadProjectImages(user.id, saved, selectedImages)
       }
 
-      navigate(`/vehicles/${vehicleId}/projects/${saved.id}`)
+      savedIdRef.current = saved.id
+      setBaseline(form)
+      setSelectedImages([])
+      return true
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Failed to save project')
-      setIsSaving(false)
+      return false
     }
+  }, [user, vehicleId, isDemoMode, form, isEditing, projectId, selectedImages])
+
+  const { isSaving, exitAndSave } = useSaveOnExit({
+    isDirty,
+    onSave: persist,
+  })
+
+  useEffect(() => {
+    const urls = selectedImages.map((file) => URL.createObjectURL(file))
+    setImagePreviewUrls(urls)
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [selectedImages])
+
+  useEffect(() => {
+    if (!projectId) return
+    let isMounted = true
+
+    getProjectById(projectId)
+      .then((project) => {
+        if (!isMounted) return
+        const next: ProjectFormSnapshot = {
+          title: project.title,
+          description: project.description ?? '',
+          partLinksText: formatPartLinksText(project.part_links),
+          maintenanceDescription: project.maintenance_description ?? '',
+          mileageInterval:
+            project.maintenance_mileage_interval_miles != null
+              ? String(project.maintenance_mileage_interval_miles)
+              : '',
+          timeIntervalMonths: '',
+        }
+        if (project.maintenance_time_interval_days != null) {
+          const months = daysToMonths(project.maintenance_time_interval_days)
+          next.timeIntervalMonths =
+            months != null
+              ? String(months)
+              : String(Math.round(project.maintenance_time_interval_days / 30))
+        }
+        savedIdRef.current = project.id
+        setForm(next)
+        setBaseline(next)
+        setSelectedImages([])
+      })
+      .catch((error: unknown) => {
+        if (isMounted) setFormError(error instanceof Error ? error.message : 'Failed to load project')
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [projectId])
+
+  function discardChanges() {
+    setForm(baseline)
+    setSelectedImages([])
+    setFormError(null)
+  }
+
+  function donePath() {
+    const id = savedIdRef.current ?? projectId
+    if (vehicleId && id) return `/vehicles/${vehicleId}/projects/${id}`
+    if (vehicleId) return `/vehicles/${vehicleId}`
+    return '/vehicles'
+  }
+
+  function patchForm(patch: Partial<ProjectFormSnapshot>) {
+    setForm((current) => ({ ...current, ...patch }))
   }
 
   if (isLoading) return <PageLoadingState label="Loading project…" />
 
   return (
     <PagePanel>
-      <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{ mb: 3, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' } }}
+      >
         <Typography variant="h1">{isEditing ? 'Edit project' : 'Add project'}</Typography>
-        <Button
-          component={RouterLink}
-          to={
-            isEditing && vehicleId && projectId
-              ? `/vehicles/${vehicleId}/projects/${projectId}`
-              : `/vehicles/${vehicleId}`
-          }
-          variant="text"
-        >
-          Cancel
-        </Button>
+        <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          {!isDemoMode ? (
+            <Button variant="outlined" color="inherit" disabled={!isDirty || isSaving} onClick={discardChanges}>
+              Discard changes
+            </Button>
+          ) : null}
+          <Button variant="text" disabled={isSaving} onClick={() => void exitAndSave(donePath)}>
+            {isSaving ? 'Saving…' : 'Done'}
+          </Button>
+        </Stack>
       </Stack>
 
-      <Stack component="form" spacing={2} onSubmit={handleSubmit}>
-        <TextField
+      <Stack spacing={2}>
+        <ClickToEditField
           label="Title"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          value={form.title}
+          onChange={(event) => patchForm({ title: event.target.value })}
           required
+          locked={isDemoMode}
         />
-        <TextField
+        <ClickToEditField
           label="Description"
           multiline
           minRows={4}
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
+          value={form.description}
+          onChange={(event) => patchForm({ description: event.target.value })}
+          locked={isDemoMode}
         />
-        <TextField
+        <ClickToEditField
           label="Parts links"
           helperText="One URL per line for parts you’ll need."
           multiline
           minRows={3}
-          value={partLinksText}
-          onChange={(event) => setPartLinksText(event.target.value)}
+          value={form.partLinksText}
+          onChange={(event) => patchForm({ partLinksText: event.target.value })}
+          locked={isDemoMode}
         />
 
         <Stack spacing={1.5}>
@@ -233,37 +278,43 @@ export function ProjectFormPage() {
                         display: 'block',
                       }}
                     />
-                    <Button
-                      size="small"
-                      color="error"
-                      variant="outlined"
-                      sx={{ mt: 1 }}
-                      onClick={() =>
-                        setSelectedImages((current) => current.filter((_, fileIndex) => fileIndex !== index))
-                      }
-                    >
-                      Remove
-                    </Button>
+                    {!isDemoMode ? (
+                      <Button
+                        size="small"
+                        color="error"
+                        variant="outlined"
+                        sx={{ mt: 1 }}
+                        onClick={() =>
+                          setSelectedImages((current) =>
+                            current.filter((_, fileIndex) => fileIndex !== index),
+                          )
+                        }
+                      >
+                        Remove
+                      </Button>
+                    ) : null}
                   </Box>
                 )
               })}
             </Box>
           ) : null}
-          <Button component="label" variant="outlined" sx={{ alignSelf: 'flex-start' }}>
-            {selectedImages.length > 0
-              ? `${selectedImages.length} image${selectedImages.length === 1 ? '' : 's'} selected`
-              : 'Add images'}
-            <input
-              hidden
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              onChange={(event) => {
-                setSelectedImages(Array.from(event.target.files ?? []))
-                event.target.value = ''
-              }}
-            />
-          </Button>
+          {!isDemoMode ? (
+            <Button component="label" variant="outlined" sx={{ alignSelf: 'flex-start' }}>
+              {selectedImages.length > 0
+                ? `${selectedImages.length} image${selectedImages.length === 1 ? '' : 's'} selected`
+                : 'Add images'}
+              <input
+                hidden
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(event) => {
+                  setSelectedImages(Array.from(event.target.files ?? []))
+                  event.target.value = ''
+                }}
+              />
+            </Button>
+          ) : null}
         </Stack>
 
         <Divider />
@@ -274,39 +325,44 @@ export function ProjectFormPage() {
             Optional. Associate recurring service with this project (mileage, months, or both).
           </Typography>
         </Stack>
-        <TextField
+        <ClickToEditField
           label="Maintenance description"
-          value={maintenanceDescription}
-          onChange={(event) => setMaintenanceDescription(event.target.value)}
+          value={form.maintenanceDescription}
+          onChange={(event) => patchForm({ maintenanceDescription: event.target.value })}
           placeholder="Oil change, tire rotation…"
+          locked={isDemoMode}
         />
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
+            <ClickToEditField
               label="Mileage interval"
               type="number"
-              value={mileageInterval}
-              onChange={(event) => setMileageInterval(event.target.value)}
+              value={form.mileageInterval}
+              onChange={(event) => patchForm({ mileageInterval: event.target.value })}
               helperText="Miles between services. Example: 5000"
               slotProps={{ htmlInput: { min: 1 } }}
+              locked={isDemoMode}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
+            <ClickToEditField
               label="Time interval"
               type="number"
-              value={timeIntervalMonths}
-              onChange={(event) => setTimeIntervalMonths(event.target.value)}
+              value={form.timeIntervalMonths}
+              onChange={(event) => patchForm({ timeIntervalMonths: event.target.value })}
               helperText="Months between services. Example: 6"
               slotProps={{ htmlInput: { min: 1 } }}
+              locked={isDemoMode}
             />
           </Grid>
         </Grid>
 
         {formError ? <Alert severity="error">{formError}</Alert> : null}
-        <Button type="submit" disabled={isSaving}>
-          {isSaving ? 'Saving…' : 'Save project'}
-        </Button>
+        {isDirty ? (
+          <Typography variant="body2" color="text.secondary">
+            Changes save when you leave this page.
+          </Typography>
+        ) : null}
       </Stack>
     </PagePanel>
   )

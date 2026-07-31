@@ -1,6 +1,6 @@
 # Fleet
 
-Personal garage management: vehicles, maintenance history, and fix research notes.
+Personal garage management: vehicles, maintenance history, and research notes.
 
 ## Stack
 

@@ -77,7 +77,7 @@ export function LandingPage() {
             content: '""',
             position: 'absolute',
             inset: 0,
-            background: `linear-gradient(90deg, rgba(20,17,15,0.88) 0%, rgba(20,17,15,0.55) 42%, rgba(20,17,15,0.18) 100%), linear-gradient(180deg, rgba(20,17,15,0.45) 0%, rgba(20,17,15,0.15) 35%, rgba(20,17,15,0.72) 100%)`,
+            background: `linear-gradient(90deg, rgba(47,46,44,0.82) 0%, rgba(47,46,44,0.48) 42%, rgba(47,46,44,0.14) 100%), linear-gradient(180deg, rgba(47,46,44,0.4) 0%, rgba(47,46,44,0.12) 35%, rgba(47,46,44,0.68) 100%)`,
           },
         }}
       />
@@ -185,7 +185,7 @@ export function LandingPage() {
               animation: `${fadeRise} 0.8s ease-out 0.35s both`,
             }}
           >
-            Track vehicles, projects, and fix research in one personal garage workspace.
+            Track vehicles, projects, and research in one personal garage workspace.
           </Typography>
 
           <Stack

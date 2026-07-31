@@ -14,7 +14,7 @@ export const WithPhoto: Story = {
   args: {
     photoPath: 'user-storybook/vehicle-1/photo.jpg',
     nickname: 'Daily Driver',
-    height: 220,
+    maxHeight: 220,
   },
 }
 
@@ -22,6 +22,6 @@ export const MissingPhoto: Story = {
   args: {
     photoPath: null,
     nickname: 'Weekend Moto',
-    height: 220,
+    maxHeight: 220,
   },
 }

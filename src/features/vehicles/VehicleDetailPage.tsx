@@ -99,7 +99,7 @@ export function VehicleDetailPage() {
 
       {vehicle.photo_path ? (
         <Box sx={{ mb: 3 }}>
-          <VehiclePhoto photoPath={vehicle.photo_path} nickname={vehicle.nickname} height={280} />
+          <VehiclePhoto photoPath={vehicle.photo_path} nickname={vehicle.nickname} maxHeight={360} />
         </Box>
       ) : null}
 

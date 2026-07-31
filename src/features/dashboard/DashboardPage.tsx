@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser, resolveVehiclePhotoUrl } from '../vehicles/vehiclesApi'
+import { VehiclePhotoThumb } from '../vehicles/VehiclePhoto'
 import { listRecentResearchForUser } from '../research/researchApi'
 import type { Vehicle, FixResearchNote } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
@@ -127,25 +128,7 @@ export function DashboardPage() {
                 <Card key={vehicle.id} variant="outlined">
                   <CardActionArea component={RouterLink} to={`/vehicles/${vehicle.id}`}>
                     <Stack direction="row" spacing={2} sx={{ p: 1.5, alignItems: 'center' }}>
-                      {photoUrl ? (
-                        <Box
-                          sx={{
-                            width: 120,
-                            height: 90,
-                            flexShrink: 0,
-                            borderRadius: 1,
-                            overflow: 'hidden',
-                            bgcolor: 'action.hover',
-                          }}
-                        >
-                          <Box
-                            component="img"
-                            src={photoUrl}
-                            alt={vehicle.nickname}
-                            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                          />
-                        </Box>
-                      ) : null}
+                      {photoUrl ? <VehiclePhotoThumb src={photoUrl} alt={vehicle.nickname} /> : null}
                       <Box sx={{ minWidth: 0 }}>
                         <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
                         <Typography color="text.secondary">
