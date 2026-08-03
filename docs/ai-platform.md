@@ -73,6 +73,12 @@ vehicles is a request, not a guarantee. Instead every query filters by vehicle i
 under the user's own JWT, so RLS independently confirms ownership. Data about another
 vehicle never enters the window in the first place.
 
+**Year / make / model and projects lead the context.** The rendered block opens with an
+explicit vehicle identity section, then completed projects (work already performed on this
+machine), then open projects, then maintenance and research. The system prompt tells the
+model to treat year/make/model as the primary identity and to factor completed mods into
+every answer.
+
 **Every collection is bounded.** Twelve maintenance records, six projects, six research
 notes, 400 characters per free-text field, 160 per title, and a 12,000 character cap on the
 whole thing as a backstop. The per-field limits are what should do the work; the global cap

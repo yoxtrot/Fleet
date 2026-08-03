@@ -33,6 +33,7 @@ import {
   type VehicleSubtype,
   type VehicleType,
 } from './vehicleTypes'
+import { VehicleIdentityFields } from './VehicleIdentityFields'
 import { VehiclePhotoCropDialog } from './VehiclePhotoCropDialog'
 import { ClickToEditField } from '../../shared/ClickToEditField'
 import { PageLoadingState } from '../../shared/PageLoadingState'
@@ -314,6 +315,9 @@ export function VehicleFormPage() {
                         : allowed.includes(draft.vehicle_subtype as VehicleSubtype)
                           ? draft.vehicle_subtype
                           : allowed[0] ?? null,
+                    year: null,
+                    make: '',
+                    model: '',
                   })
                 }}
               >
@@ -350,35 +354,16 @@ export function VehicleFormPage() {
             </Grid>
           ) : null}
         </Grid>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <ClickToEditField
-              label="Year"
-              type="number"
-              value={draft.year ?? ''}
-              onChange={(event) => setDraft({ ...draft, year: parseOptionalNumber(event.target.value) })}
-              locked={isDemoMode}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <ClickToEditField
-              label="Make"
-              value={draft.make}
-              onChange={(event) => setDraft({ ...draft, make: event.target.value })}
-              required
-              locked={isDemoMode}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <ClickToEditField
-              label="Model"
-              value={draft.model}
-              onChange={(event) => setDraft({ ...draft, model: event.target.value })}
-              required
-              locked={isDemoMode}
-            />
-          </Grid>
-        </Grid>
+        <VehicleIdentityFields
+          vehicleType={draft.vehicle_type}
+          year={draft.year}
+          make={draft.make}
+          model={draft.model}
+          locked={isDemoMode}
+          onYearChange={(year) => setDraft({ ...draft, year })}
+          onMakeChange={(make) => setDraft({ ...draft, make })}
+          onModelChange={(model) => setDraft({ ...draft, model })}
+        />
         <ClickToEditField
           label="Current mileage"
           type="number"

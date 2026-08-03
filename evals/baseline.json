@@ -1,5 +1,6 @@
 {
   "cases": {
+    "context/year-make-model-identity": true,
     "context/scope-isolation": true,
     "context/scope-isolation-reverse": true,
     "context/stays-within-budget": true,

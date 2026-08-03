@@ -40,6 +40,31 @@ function result(name: string, passed: boolean, detail: string): EvalResult {
   return { name, passed, detail }
 }
 
+const yearMakeModelIdentity: EvalCase = {
+  name: 'context/year-make-model-identity',
+  run: () => {
+    const context = renderVehicleContext(runnerSources, 'what should I check next?')
+    const hasIdentityHeader = context.text.includes('## Vehicle identity')
+    const hasYearMakeModel = context.text.includes('Year / make / model: 2004 Toyota 4Runner')
+    const hasCompletedProjects = context.text.includes('Completed projects')
+    const hasCompletedLift = context.text.includes('Old Man Emu lift')
+    const hasOpenProject = context.text.includes('[to do] Rear axle seal refresh')
+    const passed =
+      hasIdentityHeader &&
+      hasYearMakeModel &&
+      hasCompletedProjects &&
+      hasCompletedLift &&
+      hasOpenProject
+    return result(
+      'context/year-make-model-identity',
+      passed,
+      passed
+        ? 'year/make/model and completed projects present'
+        : 'missing vehicle identity or project sections',
+    )
+  },
+}
+
 const scopeIsolation: EvalCase = {
   name: 'context/scope-isolation',
   run: () => {
@@ -209,6 +234,7 @@ const costUnknownModel: EvalCase = {
 }
 
 export const deterministicEvalCases: EvalCase[] = [
+  yearMakeModelIdentity,
   scopeIsolation,
   scopeIsolationReverse,
   contextBudget,

@@ -6,8 +6,9 @@
 
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2'
 import {
+  MAX_COMPLETED_PROJECTS,
   MAX_MAINTENANCE_RECORDS,
-  MAX_PROJECTS,
+  MAX_OPEN_PROJECTS,
   MAX_RESEARCH_NOTES,
   type VehicleContextSources,
 } from '../_shared/vehicleContext.ts'
@@ -15,6 +16,7 @@ import {
 // Research notes are over-fetched so that relevance ranking has candidates to choose
 // from before the context builder trims to the notes that match the question.
 const RESEARCH_NOTE_CANDIDATES = MAX_RESEARCH_NOTES * 4
+const PROJECT_CANDIDATES = MAX_COMPLETED_PROJECTS + MAX_OPEN_PROJECTS
 
 export async function loadVehicleContextSources(
   userClient: SupabaseClient,
@@ -40,7 +42,7 @@ export async function loadVehicleContextSources(
       .select('*')
       .eq('vehicle_id', vehicleId)
       .order('updated_at', { ascending: false })
-      .limit(MAX_PROJECTS),
+      .limit(PROJECT_CANDIDATES),
     userClient
       .from('fix_research_notes')
       .select('*')

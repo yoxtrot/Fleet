@@ -6,7 +6,19 @@ export type VehicleProjectDraft = {
   vehicle_id: string
   title: string
   description: string | null
+  status: VehicleProject['status']
   part_links: string[]
+  maintenance_description: string | null
+  maintenance_mileage_interval_miles: number | null
+  maintenance_time_interval_days: number | null
+}
+
+export const PROJECT_STATUSES = ['todo', 'pending', 'completed'] as const
+
+export const PROJECT_STATUS_LABELS: Record<VehicleProject['status'], string> = {
+  todo: 'To do',
+  pending: 'Pending',
+  completed: 'Completed',
 }
 
 const sampleProjects: VehicleProject[] = [
@@ -16,6 +28,7 @@ const sampleProjects: VehicleProject[] = [
     vehicle_id: 'vehicle-1',
     title: 'Lift kit install',
     description: '2.5" lift with new UCAs.',
+    status: 'todo',
     image_paths: ['user-storybook/project-1/a.jpg'],
     part_links: ['https://example.com/lift-kit', 'https://example.com/uca'],
     maintenance_description: null,

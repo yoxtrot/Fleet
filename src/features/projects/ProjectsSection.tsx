@@ -14,6 +14,7 @@ import {
 import {
   formatProjectMaintenanceInterval,
   listProjectsForVehicle,
+  PROJECT_STATUS_LABELS,
   projectHasMaintenance,
   resolveProjectImageUrl,
 } from './projectsApi'
@@ -120,7 +121,14 @@ export function ProjectsSection({ vehicleId }: ProjectsSectionProps) {
                     ))}
                   </Box>
                 ) : null}
-                <Typography sx={{ fontWeight: 700 }}>{project.title}</Typography>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                  <Typography sx={{ fontWeight: 700 }}>{project.title}</Typography>
+                  <Chip
+                    size="small"
+                    color={project.status === 'completed' ? 'success' : project.status === 'pending' ? 'warning' : 'default'}
+                    label={PROJECT_STATUS_LABELS[project.status]}
+                  />
+                </Stack>
                 {project.description ? (
                   <Typography color="text.secondary" sx={{ mt: 0.5 }} noWrap>
                     {project.description}

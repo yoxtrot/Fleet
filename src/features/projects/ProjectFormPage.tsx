@@ -1,7 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Alert, Box, Button, Divider, Grid, Stack, Typography } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  Typography,
+} from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
+import type { ProjectStatus } from '../../lib/database.types'
 import {
   createProjectForUser,
   daysToMonths,
@@ -9,6 +22,8 @@ import {
   getProjectById,
   monthsToDays,
   parsePartLinksText,
+  PROJECT_STATUS_LABELS,
+  PROJECT_STATUSES,
   updateProject,
   uploadProjectImages,
 } from './projectsApi'
@@ -20,6 +35,7 @@ import { snapshotsDiffer, useSaveOnExit } from '../../shared/useSaveOnExit'
 type ProjectFormSnapshot = {
   title: string
   description: string
+  status: ProjectStatus
   partLinksText: string
   maintenanceDescription: string
   mileageInterval: string
@@ -29,6 +45,7 @@ type ProjectFormSnapshot = {
 const emptySnapshot: ProjectFormSnapshot = {
   title: '',
   description: '',
+  status: 'todo',
   partLinksText: '',
   maintenanceDescription: '',
   mileageInterval: '',
@@ -100,6 +117,7 @@ export function ProjectFormPage() {
       const draft = {
         title: form.title.trim(),
         description: form.description.trim() || null,
+        status: form.status,
         part_links: partLinks,
         maintenance_description: hasAnyMaintenanceField ? trimmedMaintenanceDescription : null,
         maintenance_mileage_interval_miles: hasAnyMaintenanceField ? mileageIntervalMiles : null,
@@ -151,6 +169,7 @@ export function ProjectFormPage() {
         const next: ProjectFormSnapshot = {
           title: project.title,
           description: project.description ?? '',
+          status: project.status,
           partLinksText: formatPartLinksText(project.part_links),
           maintenanceDescription: project.maintenance_description ?? '',
           mileageInterval:
@@ -230,6 +249,21 @@ export function ProjectFormPage() {
           required
           locked={isDemoMode}
         />
+        <FormControl fullWidth size="small" disabled={isDemoMode}>
+          <InputLabel id="project-status-label">Status</InputLabel>
+          <Select
+            labelId="project-status-label"
+            label="Status"
+            value={form.status}
+            onChange={(event) => patchForm({ status: event.target.value as ProjectStatus })}
+          >
+            {PROJECT_STATUSES.map((status) => (
+              <MenuItem key={status} value={status}>
+                {PROJECT_STATUS_LABELS[status]}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <ClickToEditField
           label="Description"
           multiline

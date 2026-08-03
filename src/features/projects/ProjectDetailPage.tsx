@@ -14,6 +14,7 @@ import {
   deleteProject,
   formatMaintenanceTimeInterval,
   getProjectById,
+  PROJECT_STATUS_LABELS,
   projectHasMaintenance,
   removeProjectImage,
   resolveProjectImageUrl,
@@ -137,7 +138,20 @@ export function ProjectDetailPage() {
           >
             Back to vehicle
           </Button>
-          <Typography variant="h1">{project.title}</Typography>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+            <Typography variant="h1">{project.title}</Typography>
+            <Chip
+              size="small"
+              color={
+                project.status === 'completed'
+                  ? 'success'
+                  : project.status === 'pending'
+                    ? 'warning'
+                    : 'default'
+              }
+              label={PROJECT_STATUS_LABELS[project.status]}
+            />
+          </Stack>
         </Box>
         {!isDemoMode ? (
           <Stack direction="row" spacing={1}>
