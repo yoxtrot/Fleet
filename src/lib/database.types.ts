@@ -44,7 +44,7 @@ export type FixResearchNote = {
   updated_at: string
 }
 
-export type ProjectStatus = 'todo' | 'pending' | 'completed'
+export type ProjectStatus = 'todo' | 'pending' | 'blocked' | 'complete'
 
 export type VehicleProject = {
   id: string

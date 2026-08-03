@@ -143,7 +143,7 @@ export function ProjectDetailPage() {
             <Chip
               size="small"
               color={
-                project.status === 'completed'
+                project.status === 'complete'
                   ? 'success'
                   : project.status === 'pending'
                     ? 'warning'
