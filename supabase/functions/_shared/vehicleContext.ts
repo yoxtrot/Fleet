@@ -132,10 +132,10 @@ function renderProjectLine(project: VehicleProject) {
 
 function renderProjects(projects: VehicleProject[]) {
   const completed = projects
-    .filter((project) => project.status === 'completed')
+    .filter((project) => project.status === 'complete')
     .slice(0, MAX_COMPLETED_PROJECTS)
   const open = projects
-    .filter((project) => project.status !== 'completed')
+    .filter((project) => project.status !== 'complete')
     .slice(0, MAX_OPEN_PROJECTS)
 
   if (completed.length === 0 && open.length === 0) {
@@ -191,11 +191,11 @@ export function renderVehicleContext(
   const researchNotes = selectRelevantResearchNotes(sources.researchNotes, question)
   const includedProjects =
     Math.min(
-      sources.projects.filter((project) => project.status === 'completed').length,
+      sources.projects.filter((project) => project.status === 'complete').length,
       MAX_COMPLETED_PROJECTS,
     ) +
     Math.min(
-      sources.projects.filter((project) => project.status !== 'completed').length,
+      sources.projects.filter((project) => project.status !== 'complete').length,
       MAX_OPEN_PROJECTS,
     )
 

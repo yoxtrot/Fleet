@@ -125,7 +125,7 @@ export function ProjectsSection({ vehicleId }: ProjectsSectionProps) {
                   <Typography sx={{ fontWeight: 700 }}>{project.title}</Typography>
                   <Chip
                     size="small"
-                    color={project.status === 'completed' ? 'success' : project.status === 'pending' ? 'warning' : 'default'}
+                    color={project.status === 'complete' ? 'success' : project.status === 'pending' ? 'warning' : 'default'}
                     label={PROJECT_STATUS_LABELS[project.status]}
                   />
                 </Stack>
