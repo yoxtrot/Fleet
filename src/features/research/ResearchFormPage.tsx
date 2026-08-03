@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser } from '../vehicles/vehiclesApi'
+import { useDeclareVehicleScope } from '../assistant/vehicleScope'
 import {
   createResearchNote,
   getResearchNoteById,
@@ -167,6 +168,11 @@ export function ResearchFormPage() {
       isMounted = false
     }
   }, [user, noteId])
+
+  const scopedVehicle = vehicles.find((vehicle) => vehicle.id === snapshot.draft.vehicle_id) ?? null
+  useDeclareVehicleScope(
+    scopedVehicle ? { vehicleId: scopedVehicle.id, vehicleName: scopedVehicle.nickname } : null,
+  )
 
   function discardChanges() {
     setSnapshot(baseline)

@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
+import { MechanicAssistantDock } from '../features/assistant/MechanicAssistantDock'
 
 const navLinkSx = {
   color: 'inherit',
@@ -114,6 +115,8 @@ export function AppShell() {
       <Container maxWidth="md" sx={{ py: 3 }}>
         <Outlet />
       </Container>
+
+      <MechanicAssistantDock />
     </Box>
   )
 }

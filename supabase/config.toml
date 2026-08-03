@@ -15,3 +15,9 @@ schema_paths = []
 
 [studio]
 enabled = true
+
+# The gateway check rejects requests with no token at all. It is not sufficient on its
+# own, because the anon key is a valid JWT — the function also resolves the token to an
+# authenticated user before doing any work.
+[functions.mechanic-assistant]
+verify_jwt = true

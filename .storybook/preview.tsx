@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import type { User } from '@supabase/supabase-js'
 import { fleetTheme } from '../src/app/theme'
 import { StorybookAuthProvider } from '../src/app/AuthProvider'
+import { VehicleScopeProvider } from '../src/features/assistant/VehicleScopeProvider'
 import '../src/index.css'
 
 const sampleUser = {
@@ -28,7 +29,9 @@ const withFleetProviders: Decorator = (Story, context) => {
       <CssBaseline />
       <StorybookAuthProvider user={authUser} isLoadingSession={isLoadingSession}>
         <MemoryRouter initialEntries={[initialPath]}>
-          <Story />
+          <VehicleScopeProvider>
+            <Story />
+          </VehicleScopeProvider>
         </MemoryRouter>
       </StorybookAuthProvider>
     </ThemeProvider>
