@@ -1,14 +1,23 @@
 import { supabase } from '../../lib/supabase'
-import type { VehicleProject } from '../../lib/database.types'
+import type { ProjectStatus, VehicleProject } from '../../lib/database.types'
 
 export const PROJECT_IMAGES_BUCKET = 'project-images'
 const MAX_PROJECT_IMAGE_BYTES = 5 * 1024 * 1024
 const ALLOWED_PROJECT_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
+export const PROJECT_STATUSES = ['todo', 'pending', 'completed'] as const
+
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
+  todo: 'To do',
+  pending: 'Pending',
+  completed: 'Completed',
+}
+
 export type VehicleProjectDraft = {
   vehicle_id: string
   title: string
   description: string | null
+  status: ProjectStatus
   part_links: string[]
   maintenance_description: string | null
   maintenance_mileage_interval_miles: number | null
@@ -54,6 +63,7 @@ export async function updateProject(projectId: string, draft: Omit<VehicleProjec
     .update({
       title: draft.title,
       description: draft.description,
+      status: draft.status,
       part_links: draft.part_links,
       maintenance_description: draft.maintenance_description,
       maintenance_mileage_interval_miles: draft.maintenance_mileage_interval_miles,

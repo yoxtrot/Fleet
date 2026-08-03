@@ -44,12 +44,15 @@ export type FixResearchNote = {
   updated_at: string
 }
 
+export type ProjectStatus = 'todo' | 'pending' | 'completed'
+
 export type VehicleProject = {
   id: string
   user_id: string
   vehicle_id: string
   title: string
   description: string | null
+  status: ProjectStatus
   image_paths: string[]
   part_links: string[]
   maintenance_description: string | null
@@ -222,6 +225,7 @@ type VehicleProjectsTable = {
     vehicle_id: string
     title: string
     description?: string | null
+    status?: ProjectStatus
     image_paths?: string[]
     part_links?: string[]
     maintenance_description?: string | null
@@ -236,6 +240,7 @@ type VehicleProjectsTable = {
     vehicle_id?: string
     title?: string
     description?: string | null
+    status?: ProjectStatus
     image_paths?: string[]
     part_links?: string[]
     maintenance_description?: string | null

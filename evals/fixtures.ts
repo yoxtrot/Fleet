@@ -86,13 +86,19 @@ function researchNote(
   }
 }
 
-function project(vehicleId: string, id: string, title: string): VehicleProject {
+function project(
+  vehicleId: string,
+  id: string,
+  title: string,
+  status: VehicleProject['status'] = 'todo',
+): VehicleProject {
   return {
     id,
     user_id: OWNER_ID,
     vehicle_id: vehicleId,
     title,
     description: null,
+    status,
     image_paths: [],
     part_links: [],
     maintenance_description: null,
@@ -126,7 +132,10 @@ export const runnerSources: VehicleContextSources = {
       notes: 'Original radiator was seeping at the end tank.',
     }),
   ],
-  projects: [project(RUNNER_ID, 'p-1', 'Rear axle seal refresh')],
+  projects: [
+    project(RUNNER_ID, 'p-0', 'Old Man Emu lift', 'completed'),
+    project(RUNNER_ID, 'p-1', 'Rear axle seal refresh', 'todo'),
+  ],
   researchNotes: [
     researchNote(RUNNER_ID, 'r-1', 'Brake pedal pulsation under light braking', {
       symptom: 'Steering wheel shimmy and pedal pulsation when braking from highway speed.',

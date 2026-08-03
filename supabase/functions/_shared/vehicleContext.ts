@@ -13,7 +13,8 @@ import type {
 } from '../../../src/lib/database.types.ts'
 
 export const MAX_MAINTENANCE_RECORDS = 12
-export const MAX_PROJECTS = 6
+export const MAX_COMPLETED_PROJECTS = 10
+export const MAX_OPEN_PROJECTS = 8
 export const MAX_RESEARCH_NOTES = 6
 export const MAX_FIELD_CHARACTERS = 400
 export const MAX_TITLE_CHARACTERS = 160
@@ -85,14 +86,29 @@ export function selectRelevantResearchNotes(
     .map((scored) => scored.note)
 }
 
+function vehicleYearMakeModel(vehicle: Vehicle) {
+  return [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')
+}
+
 function renderVehicleIdentity(vehicle: Vehicle) {
-  const name = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')
+  const yearMakeModel = vehicleYearMakeModel(vehicle)
   return joinLines([
-    '## Vehicle',
-    `Nickname: ${truncate(vehicle.nickname, MAX_TITLE_CHARACTERS)}`,
-    labelledLine('Vehicle', name || null),
-    labelledLine('Type', vehicle.vehicle_subtype ? `${vehicle.vehicle_type} (${vehicle.vehicle_subtype})` : vehicle.vehicle_type),
-    labelledLine('Current mileage', vehicle.current_mileage === null ? null : `${vehicle.current_mileage}`),
+    '## Vehicle identity',
+    labelledLine('Year / make / model', yearMakeModel || null),
+    labelledLine('Year', vehicle.year === null ? null : String(vehicle.year)),
+    labelledLine('Make', truncate(vehicle.make, MAX_TITLE_CHARACTERS)),
+    labelledLine('Model', truncate(vehicle.model, MAX_TITLE_CHARACTERS)),
+    labelledLine('Nickname', truncate(vehicle.nickname, MAX_TITLE_CHARACTERS)),
+    labelledLine(
+      'Type',
+      vehicle.vehicle_subtype
+        ? `${vehicle.vehicle_type} (${vehicle.vehicle_subtype})`
+        : vehicle.vehicle_type,
+    ),
+    labelledLine(
+      'Current mileage',
+      vehicle.current_mileage === null ? null : `${vehicle.current_mileage}`,
+    ),
     labelledLine('Owner notes', truncate(vehicle.notes)),
   ])
 }
@@ -109,14 +125,48 @@ function renderMaintenanceHistory(records: MaintenanceRecord[]) {
   return ['## Maintenance history', ...lines].join('\n')
 }
 
-function renderProjects(projects: VehicleProject[]) {
-  if (projects.length === 0) return null
+function renderProjectLine(project: VehicleProject) {
+  const description = truncate(project.description, 200)
+  return `- ${truncate(project.title, MAX_TITLE_CHARACTERS)}${description ? ` — ${description}` : ''}`
+}
 
-  const lines = projects.map((project) => {
-    const description = truncate(project.description, 200)
-    return `- ${truncate(project.title, MAX_TITLE_CHARACTERS)}${description ? ` — ${description}` : ''}`
-  })
-  return ['## Open projects', ...lines].join('\n')
+function renderProjects(projects: VehicleProject[]) {
+  const completed = projects
+    .filter((project) => project.status === 'completed')
+    .slice(0, MAX_COMPLETED_PROJECTS)
+  const open = projects
+    .filter((project) => project.status !== 'completed')
+    .slice(0, MAX_OPEN_PROJECTS)
+
+  if (completed.length === 0 && open.length === 0) {
+    return '## Projects\nNo projects logged for this vehicle.'
+  }
+
+  const sections: string[] = []
+  if (completed.length > 0) {
+    sections.push(
+      '## Completed projects (already performed on this vehicle)',
+      ...completed.map(renderProjectLine),
+    )
+  } else {
+    sections.push('## Completed projects (already performed on this vehicle)', 'None logged.')
+  }
+
+  if (open.length > 0) {
+    sections.push(
+      '',
+      '## Open projects (planned or in progress)',
+      ...open.map((project) => {
+        const status = project.status === 'pending' ? 'pending' : 'to do'
+        const description = truncate(project.description, 200)
+        return `- [${status}] ${truncate(project.title, MAX_TITLE_CHARACTERS)}${
+          description ? ` — ${description}` : ''
+        }`
+      }),
+    )
+  }
+
+  return sections.join('\n')
 }
 
 function renderResearchNotes(notes: FixResearchNote[]) {
@@ -138,13 +188,21 @@ export function renderVehicleContext(
   question: string,
 ): RenderedVehicleContext {
   const maintenanceRecords = sources.maintenanceRecords.slice(0, MAX_MAINTENANCE_RECORDS)
-  const projects = sources.projects.slice(0, MAX_PROJECTS)
   const researchNotes = selectRelevantResearchNotes(sources.researchNotes, question)
+  const includedProjects =
+    Math.min(
+      sources.projects.filter((project) => project.status === 'completed').length,
+      MAX_COMPLETED_PROJECTS,
+    ) +
+    Math.min(
+      sources.projects.filter((project) => project.status !== 'completed').length,
+      MAX_OPEN_PROJECTS,
+    )
 
   const sections = [
     renderVehicleIdentity(sources.vehicle),
+    renderProjects(sources.projects),
     renderMaintenanceHistory(maintenanceRecords),
-    renderProjects(projects),
     renderResearchNotes(researchNotes),
   ].filter((section): section is string => Boolean(section))
 
@@ -157,7 +215,7 @@ export function renderVehicleContext(
   return {
     text,
     includedMaintenanceRecords: maintenanceRecords.length,
-    includedProjects: projects.length,
+    includedProjects,
     includedResearchNotes: researchNotes.length,
     characterCount: text.length,
   }
