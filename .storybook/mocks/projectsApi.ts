@@ -13,12 +13,13 @@ export type VehicleProjectDraft = {
   maintenance_time_interval_days: number | null
 }
 
-export const PROJECT_STATUSES = ['todo', 'pending', 'completed'] as const
+export const PROJECT_STATUSES = ['todo', 'pending', 'blocked', 'complete'] as const
 
 export const PROJECT_STATUS_LABELS: Record<VehicleProject['status'], string> = {
   todo: 'To do',
   pending: 'Pending',
-  completed: 'Completed',
+  blocked: 'Blocked',
+  complete: 'Completed',
 }
 
 const sampleProjects: VehicleProject[] = [

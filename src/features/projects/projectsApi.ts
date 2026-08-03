@@ -5,12 +5,13 @@ export const PROJECT_IMAGES_BUCKET = 'project-images'
 const MAX_PROJECT_IMAGE_BYTES = 5 * 1024 * 1024
 const ALLOWED_PROJECT_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
-export const PROJECT_STATUSES = ['todo', 'pending', 'completed'] as const
+export const PROJECT_STATUSES = ['todo', 'pending', 'blocked', 'complete'] as const
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   todo: 'To do',
   pending: 'Pending',
-  completed: 'Completed',
+  blocked: 'Blocked',
+  complete: 'Completed',
 }
 
 export type VehicleProjectDraft = {

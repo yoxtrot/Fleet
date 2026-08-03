@@ -133,7 +133,7 @@ export const runnerSources: VehicleContextSources = {
     }),
   ],
   projects: [
-    project(RUNNER_ID, 'p-0', 'Old Man Emu lift', 'completed'),
+    project(RUNNER_ID, 'p-0', 'Old Man Emu lift', 'complete'),
     project(RUNNER_ID, 'p-1', 'Rear axle seal refresh', 'todo'),
   ],
   researchNotes: [
