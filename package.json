@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "evals": "node --experimental-strip-types --no-warnings evals/runEvals.ts",
     "db:push": "node scripts/apply-supabase-migrations.mjs",
     "db:push:dry-run": "node scripts/apply-supabase-migrations.mjs --dry-run"
   },

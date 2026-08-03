@@ -1,0 +1,15 @@
+{
+  "cases": {
+    "context/scope-isolation": true,
+    "context/scope-isolation-reverse": true,
+    "context/stays-within-budget": true,
+    "context/oversized-field-truncated": true,
+    "context/retrieves-relevant-note": true,
+    "context/conversation-trimmed": true,
+    "context/cacheable-prefix": true,
+    "cost/known-model-priced": true,
+    "cost/cache-reads-cheaper": true,
+    "cost/dated-model-id-resolves": true,
+    "cost/unknown-model-is-null-not-zero": true
+  }
+}

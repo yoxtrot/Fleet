@@ -16,6 +16,7 @@ export const MAX_MAINTENANCE_RECORDS = 12
 export const MAX_PROJECTS = 6
 export const MAX_RESEARCH_NOTES = 6
 export const MAX_FIELD_CHARACTERS = 400
+export const MAX_TITLE_CHARACTERS = 160
 export const MAX_CONTEXT_CHARACTERS = 12_000
 
 export type VehicleContextSources = {
@@ -88,7 +89,7 @@ function renderVehicleIdentity(vehicle: Vehicle) {
   const name = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')
   return joinLines([
     '## Vehicle',
-    `Nickname: ${vehicle.nickname}`,
+    `Nickname: ${truncate(vehicle.nickname, MAX_TITLE_CHARACTERS)}`,
     labelledLine('Vehicle', name || null),
     labelledLine('Type', vehicle.vehicle_subtype ? `${vehicle.vehicle_type} (${vehicle.vehicle_subtype})` : vehicle.vehicle_type),
     labelledLine('Current mileage', vehicle.current_mileage === null ? null : `${vehicle.current_mileage}`),
@@ -102,7 +103,8 @@ function renderMaintenanceHistory(records: MaintenanceRecord[]) {
   const lines = records.map((record) => {
     const mileage = record.mileage === null ? '' : ` at ${record.mileage} mi`
     const notes = truncate(record.notes, 200)
-    return `- ${record.performed_on}${mileage}: ${record.title}${notes ? ` — ${notes}` : ''}`
+    const title = truncate(record.title, MAX_TITLE_CHARACTERS)
+    return `- ${record.performed_on}${mileage}: ${title}${notes ? ` — ${notes}` : ''}`
   })
   return ['## Maintenance history', ...lines].join('\n')
 }
@@ -112,7 +114,7 @@ function renderProjects(projects: VehicleProject[]) {
 
   const lines = projects.map((project) => {
     const description = truncate(project.description, 200)
-    return `- ${project.title}${description ? ` — ${description}` : ''}`
+    return `- ${truncate(project.title, MAX_TITLE_CHARACTERS)}${description ? ` — ${description}` : ''}`
   })
   return ['## Open projects', ...lines].join('\n')
 }
@@ -122,7 +124,7 @@ function renderResearchNotes(notes: FixResearchNote[]) {
 
   const blocks = notes.map((note) =>
     joinLines([
-      `- ${note.title}`,
+      `- ${truncate(note.title, MAX_TITLE_CHARACTERS)}`,
       labelledLine('  Symptom', truncate(note.symptom, 240)),
       labelledLine('  Diagnosis', truncate(note.diagnosis, 240)),
       labelledLine('  Steps tried', truncate(note.steps_tried, 240)),
