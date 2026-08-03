@@ -52,8 +52,7 @@ begin
         ('Suspension - coilovers', null::text, 'completed'),
         ('Interior - change to black', null::text, 'completed'),
         ('Audio setup', null::text, 'completed'),
-        ('Sway bar', null::text, 'completed'),
-        ('New wheels + tires', null::text, 'completed'),
+        ('Sway bar and new wheels + tires', null::text, 'completed'),
         ('Install alternator', null::text, 'pending')
     ) as seed(title, description, status)
     where not exists (
