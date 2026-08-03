@@ -33,6 +33,18 @@ npm run storybook
 
 Open `http://localhost:6006`.
 
+## Mechanic assistant
+
+Signed-in users get an assistant scoped to the vehicle they are viewing. It runs in a
+Supabase Edge Function, records token usage and cost for every call, and enforces daily
+per-user limits. See **[docs/ai-platform.md](docs/ai-platform.md)** for setup and design.
+
+Run the eval suite (no API key needed for the deterministic cases):
+
+```bash
+npm run evals
+```
+
 ## Coding philosophy
 
 Readable names over comments. See [docs/coding-philosophy.md](docs/coding-philosophy.md).

@@ -34,6 +34,10 @@ Invoke with `@skill-name` or by describing the matching task (for example “hel
 
 - `src/app/` — auth provider, shell, router, route guards
 - `src/features/auth|vehicles|projects|maintenance|research|dashboard/` — feature UI + API helpers
+- `src/features/assistant/` — vehicle-scoped mechanic assistant dock and client helper
 - `src/lib/supabase.ts` — browser Supabase client (anon key only)
+- `src/lib/aiContracts.ts` — wire contract shared with the Edge Function (keep import-free)
 - `supabase/migrations/` — SQL schema + RLS policies
-- `docs/` — human setup and coding philosophy
+- `supabase/functions/` — Edge Functions; the only place a model API key may live
+- `evals/` — deterministic and graded evals with a regression baseline (`npm run evals`)
+- `docs/` — human setup, coding philosophy, and `ai-platform.md` for the assistant

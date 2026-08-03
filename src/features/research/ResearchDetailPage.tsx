@@ -4,6 +4,7 @@ import { Alert, Box, Button, Divider, Stack, Typography } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { deleteResearchNote, getResearchNoteById } from './researchApi'
 import { getVehicleById } from '../vehicles/vehiclesApi'
+import { useDeclareVehicleScope } from '../assistant/vehicleScope'
 import type { FixResearchNote } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
 import { PagePanel } from '../../shared/PagePanel'
@@ -41,6 +42,12 @@ export function ResearchDetailPage() {
       isMounted = false
     }
   }, [noteId])
+
+  useDeclareVehicleScope(
+    note?.vehicle_id && vehicleNickname
+      ? { vehicleId: note.vehicle_id, vehicleName: vehicleNickname }
+      : null,
+  )
 
   async function handleDelete() {
     if (!noteId || !note) return

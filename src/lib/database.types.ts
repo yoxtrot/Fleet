@@ -59,6 +59,37 @@ export type VehicleProject = {
   updated_at: string
 }
 
+export type AiModelCall = {
+  id: string
+  user_id: string
+  trace_id: string
+  feature: string
+  model: string
+  prompt_version: string
+  status: 'succeeded' | 'failed'
+  finish_reason: string | null
+  error_message: string | null
+  input_tokens: number
+  output_tokens: number
+  cache_read_tokens: number
+  cache_write_tokens: number
+  cost_micro_usd: number | null
+  pricing_version: string
+  latency_ms: number
+  created_at: string
+}
+
+export type AiPromptLog = {
+  id: string
+  model_call_id: string
+  user_id: string
+  system_prompt: string
+  rendered_context: string
+  user_message: string
+  response_text: string | null
+  created_at: string
+}
+
 type VehiclesTable = {
   Row: Vehicle
   Insert: {
@@ -224,6 +255,31 @@ type VehicleProjectsTable = {
   ]
 }
 
+// Observability rows are written only by Edge Functions holding the service role. The
+// browser has select-only RLS, so the write shapes exist purely to satisfy the client
+// generics and are never used from `src`.
+type AiModelCallsTable = {
+  Row: AiModelCall
+  Insert: AiModelCall
+  Update: Partial<AiModelCall>
+  Relationships: []
+}
+
+type AiPromptLogsTable = {
+  Row: AiPromptLog
+  Insert: AiPromptLog
+  Update: Partial<AiPromptLog>
+  Relationships: [
+    {
+      foreignKeyName: 'ai_prompt_logs_model_call_id_fkey'
+      columns: ['model_call_id']
+      isOneToOne: false
+      referencedRelation: 'ai_model_calls'
+      referencedColumns: ['id']
+    },
+  ]
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -231,6 +287,8 @@ export type Database = {
       maintenance_records: MaintenanceRecordsTable
       fix_research_notes: FixResearchNotesTable
       vehicle_projects: VehicleProjectsTable
+      ai_model_calls: AiModelCallsTable
+      ai_prompt_logs: AiPromptLogsTable
     }
     Views: Record<string, never>
     Functions: Record<string, never>

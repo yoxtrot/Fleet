@@ -3,6 +3,7 @@ import { AuthProvider } from './AuthProvider'
 import { AppShell } from './AppShell'
 import { DemoReadOnlyRoute } from './DemoReadOnlyRoute'
 import { ProtectedRoute } from './ProtectedRoute'
+import { VehicleScopeProvider } from '../features/assistant/VehicleScopeProvider'
 import { LandingPage } from '../features/landing/LandingPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
@@ -22,7 +23,11 @@ const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        element: <AppShell />,
+        element: (
+          <VehicleScopeProvider>
+            <AppShell />
+          </VehicleScopeProvider>
+        ),
         children: [
           { path: 'home', element: <DashboardPage /> },
           { path: 'vehicles', element: <VehicleListPage /> },
