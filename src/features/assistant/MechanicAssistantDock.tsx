@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   Alert,
   Box,
@@ -7,12 +7,14 @@ import {
   Divider,
   Drawer,
   Fab,
+  IconButton,
   Paper,
   Stack,
   TextField,
   Typography,
 } from '@mui/material'
 import BuildIcon from '@mui/icons-material/Build'
+import CloseIcon from '@mui/icons-material/Close'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/AuthProvider'
 import {
@@ -82,19 +84,50 @@ function UsageFooter({
   )
 }
 
+function AssistantDrawerHeader({
+  onClose,
+  children,
+}: {
+  onClose: () => void
+  children: ReactNode
+}) {
+  return (
+    <Stack
+      direction="row"
+      spacing={1}
+      sx={{ p: 2, alignItems: 'flex-start', justifyContent: 'space-between' }}
+    >
+      <Stack spacing={1} sx={{ minWidth: 0, flex: 1 }}>
+        {children}
+      </Stack>
+      <IconButton
+        aria-label="Close mechanic assistant"
+        onClick={onClose}
+        edge="end"
+        size="small"
+        sx={{ mt: -0.5 }}
+      >
+        <CloseIcon />
+      </IconButton>
+    </Stack>
+  )
+}
+
 function DemoMechanicAssistantPanel({
   scope,
+  onClose,
   onSignIn,
 }: {
   scope: VehicleScope | null
+  onClose: () => void
   onSignIn: () => void
 }) {
   return (
     <Stack sx={{ height: '100%' }}>
-      <Stack spacing={1} sx={{ p: 2 }}>
+      <AssistantDrawerHeader onClose={onClose}>
         <Typography variant="h6">Mechanic assistant</Typography>
         <Chip label="Demo preview" size="small" color="primary" variant="outlined" />
-      </Stack>
+      </AssistantDrawerHeader>
       <Divider />
 
       <Stack spacing={2} sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
@@ -153,9 +186,12 @@ function DemoMechanicAssistantPanel({
       </Stack>
 
       <Divider />
-      <Stack sx={{ p: 2 }}>
+      <Stack spacing={1} sx={{ p: 2 }}>
         <Button variant="contained" onClick={onSignIn}>
           Sign in to ask questions
+        </Button>
+        <Button variant="text" color="inherit" onClick={onClose}>
+          Close
         </Button>
       </Stack>
     </Stack>
@@ -263,6 +299,7 @@ export function MechanicAssistantDock() {
         {isDemoMode ? (
           <DemoMechanicAssistantPanel
             scope={scope}
+            onClose={() => setIsOpen(false)}
             onSignIn={() => {
               setIsOpen(false)
               exitDemoMode()
@@ -271,7 +308,7 @@ export function MechanicAssistantDock() {
           />
         ) : (
           <Stack sx={{ height: '100%' }}>
-            <Stack spacing={1} sx={{ p: 2 }}>
+            <AssistantDrawerHeader onClose={() => setIsOpen(false)}>
               <Typography variant="h6">Mechanic assistant</Typography>
               {scope ? (
                 <Chip
@@ -286,7 +323,7 @@ export function MechanicAssistantDock() {
                   viewing.
                 </Typography>
               )}
-            </Stack>
+            </AssistantDrawerHeader>
             <Divider />
 
             <Stack spacing={1.5} sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
