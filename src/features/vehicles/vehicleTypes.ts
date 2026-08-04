@@ -15,6 +15,12 @@ export const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
   motorcycle: 'Motorcycle',
 }
 
+export const VEHICLE_TYPE_SECTION_LABELS: Record<VehicleType, string> = {
+  car: 'Cars',
+  bike: 'Bikes',
+  motorcycle: 'Motorcycles',
+}
+
 export const VEHICLE_SUBTYPE_LABELS: Record<VehicleSubtype, string> = {
   road: 'Road',
   gravel: 'Gravel',
