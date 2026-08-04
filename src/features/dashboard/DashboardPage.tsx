@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import {
   Alert,
@@ -12,8 +12,9 @@ import {
   Typography,
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
+import { groupItemsByVehicleType } from '../vehicles/groupVehiclesByType'
 import { listVehiclesForUser, resolveVehiclePhotoUrl } from '../vehicles/vehiclesApi'
-import { formatVehicleKind } from '../vehicles/vehicleTypes'
+import { formatVehicleKind, VEHICLE_TYPE_SECTION_LABELS } from '../vehicles/vehicleTypes'
 import { VehiclePhotoThumb } from '../vehicles/VehiclePhoto'
 import { listRecentResearchForUser } from '../research/researchApi'
 import type { Vehicle, FixResearchNote } from '../../lib/database.types'
@@ -65,6 +66,8 @@ export function DashboardPage() {
       isMounted = false
     }
   }, [user])
+
+  const vehicleGroups = useMemo(() => groupItemsByVehicleType(vehicleItems), [vehicleItems])
 
   if (isLoading) return <PageLoadingState label="Loading garage…" />
 
@@ -124,23 +127,32 @@ export function DashboardPage() {
           {vehicleItems.length === 0 ? (
             <Typography color="text.secondary">No vehicles yet. Add your first one to start logging work.</Typography>
           ) : (
-            <Stack spacing={1.5}>
-              {vehicleItems.map(({ vehicle, photoUrl }) => (
-                <Card key={vehicle.id} variant="outlined">
-                  <CardActionArea component={RouterLink} to={`/vehicles/${vehicle.id}`}>
-                    <Stack direction="row" spacing={2} sx={{ p: 1.5, alignItems: 'center' }}>
-                      {photoUrl ? <VehiclePhotoThumb src={photoUrl} alt={vehicle.nickname} /> : null}
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
-                        <Typography color="text.secondary">
-                          {formatVehicleKind(vehicle.vehicle_type, vehicle.vehicle_subtype)}
-                          {' · '}
-                          {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </CardActionArea>
-                </Card>
+            <Stack spacing={3}>
+              {vehicleGroups.map(({ type, items }) => (
+                <Box key={type} component="section">
+                  <Typography variant="h2" sx={{ mb: 1.5 }}>
+                    {VEHICLE_TYPE_SECTION_LABELS[type]}
+                  </Typography>
+                  <Stack spacing={1.5}>
+                    {items.map(({ vehicle, photoUrl }) => (
+                      <Card key={vehicle.id} variant="outlined">
+                        <CardActionArea component={RouterLink} to={`/vehicles/${vehicle.id}`}>
+                          <Stack direction="row" spacing={2} sx={{ p: 1.5, alignItems: 'center' }}>
+                            {photoUrl ? <VehiclePhotoThumb src={photoUrl} alt={vehicle.nickname} /> : null}
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
+                              <Typography color="text.secondary">
+                                {formatVehicleKind(vehicle.vehicle_type, vehicle.vehicle_subtype)}
+                                {' · '}
+                                {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </CardActionArea>
+                      </Card>
+                    ))}
+                  </Stack>
+                </Box>
               ))}
             </Stack>
           )}
