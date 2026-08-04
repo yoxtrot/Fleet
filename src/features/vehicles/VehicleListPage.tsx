@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import {
   Alert,
@@ -11,7 +11,12 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
 import { listVehiclesForUser, resolveVehiclePhotoUrl } from './vehiclesApi'
-import { formatVehicleKind } from './vehicleTypes'
+import {
+  formatVehicleKind,
+  VEHICLE_TYPE_SECTION_LABELS,
+  VEHICLE_TYPES,
+  type VehicleType,
+} from './vehicleTypes'
 import { VehiclePhotoThumb } from './VehiclePhoto'
 import type { Vehicle } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
@@ -20,6 +25,31 @@ import { PagePanel } from '../../shared/PagePanel'
 type VehicleListItem = {
   vehicle: Vehicle
   photoUrl: string | null
+}
+
+function VehicleListCard({ vehicle, photoUrl }: VehicleListItem) {
+  return (
+    <Card variant="outlined">
+      <CardActionArea component={RouterLink} to={`/vehicles/${vehicle.id}`}>
+        <Stack direction="row" spacing={2} sx={{ p: 1.5, alignItems: 'center' }}>
+          {photoUrl ? <VehiclePhotoThumb src={photoUrl} alt={vehicle.nickname} /> : null}
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
+            <Typography color="text.secondary">
+              {formatVehicleKind(vehicle.vehicle_type, vehicle.vehicle_subtype)}
+              {' · '}
+              {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+            </Typography>
+            {vehicle.current_mileage != null ? (
+              <Typography color="text.secondary" variant="body2">
+                {vehicle.current_mileage.toLocaleString()} mi
+              </Typography>
+            ) : null}
+          </Box>
+        </Stack>
+      </CardActionArea>
+    </Card>
+  )
 }
 
 export function VehicleListPage() {
@@ -54,6 +84,17 @@ export function VehicleListPage() {
     }
   }, [user])
 
+  const vehiclesByType = useMemo(() => {
+    const groups = Object.fromEntries(
+      VEHICLE_TYPES.map((type) => [type, [] as VehicleListItem[]]),
+    ) as Record<VehicleType, VehicleListItem[]>
+
+    for (const item of vehicleItems) {
+      groups[item.vehicle.vehicle_type].push(item)
+    }
+    return groups
+  }, [vehicleItems])
+
   if (isLoading) return <PageLoadingState label="Loading vehicles…" />
 
   return (
@@ -76,29 +117,23 @@ export function VehicleListPage() {
       {vehicleItems.length === 0 && !loadError ? (
         <Typography color="text.secondary">Your fleet is empty. Add a vehicle to get started.</Typography>
       ) : (
-        <Stack spacing={1.5}>
-          {vehicleItems.map(({ vehicle, photoUrl }) => (
-            <Card key={vehicle.id} variant="outlined">
-              <CardActionArea component={RouterLink} to={`/vehicles/${vehicle.id}`}>
-                <Stack direction="row" spacing={2} sx={{ p: 1.5, alignItems: 'center' }}>
-                  {photoUrl ? <VehiclePhotoThumb src={photoUrl} alt={vehicle.nickname} /> : null}
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontWeight: 700 }}>{vehicle.nickname}</Typography>
-                    <Typography color="text.secondary">
-                      {formatVehicleKind(vehicle.vehicle_type, vehicle.vehicle_subtype)}
-                      {' · '}
-                      {[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
-                    </Typography>
-                    {vehicle.current_mileage != null ? (
-                      <Typography color="text.secondary" variant="body2">
-                        {vehicle.current_mileage.toLocaleString()} mi
-                      </Typography>
-                    ) : null}
-                  </Box>
+        <Stack spacing={3}>
+          {VEHICLE_TYPES.map((type) => {
+            const items = vehiclesByType[type]
+            if (items.length === 0) return null
+            return (
+              <Box key={type} component="section">
+                <Typography variant="h2" sx={{ mb: 1.5 }}>
+                  {VEHICLE_TYPE_SECTION_LABELS[type]}
+                </Typography>
+                <Stack spacing={1.5}>
+                  {items.map((item) => (
+                    <VehicleListCard key={item.vehicle.id} {...item} />
+                  ))}
                 </Stack>
-              </CardActionArea>
-            </Card>
-          ))}
+              </Box>
+            )
+          })}
         </Stack>
       )}
     </PagePanel>
