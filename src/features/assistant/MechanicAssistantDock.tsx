@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material'
 import BuildIcon from '@mui/icons-material/Build'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/AuthProvider'
 import {
   ASSISTANT_DAILY_CALL_LIMIT,
@@ -26,7 +27,7 @@ import {
   readAssistantUsageToday,
   type AssistantUsageToday,
 } from './mechanicAssistantApi'
-import { useVehicleScope } from './vehicleScope'
+import { useVehicleScope, type VehicleScope } from './vehicleScope'
 
 function MessageBubble({ message }: { message: MechanicAssistantMessage }) {
   const isUser = message.role === 'user'
@@ -81,9 +82,90 @@ function UsageFooter({
   )
 }
 
+function DemoMechanicAssistantPanel({
+  scope,
+  onSignIn,
+}: {
+  scope: VehicleScope | null
+  onSignIn: () => void
+}) {
+  return (
+    <Stack sx={{ height: '100%' }}>
+      <Stack spacing={1} sx={{ p: 2 }}>
+        <Typography variant="h6">Mechanic assistant</Typography>
+        <Chip label="Demo preview" size="small" color="primary" variant="outlined" />
+      </Stack>
+      <Divider />
+
+      <Stack spacing={2} sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+        <Typography variant="body1">
+          This is Fleet&apos;s vehicle-scoped AI mechanic. It answers questions about the vehicle
+          you are currently viewing — and only that vehicle.
+        </Typography>
+
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            What it uses as context
+          </Typography>
+          <Stack component="ul" spacing={0.75} sx={{ m: 0, pl: 2.5 }}>
+            <Typography component="li" variant="body2">
+              Year, make, and model of the open vehicle
+            </Typography>
+            <Typography component="li" variant="body2">
+              Completed projects already performed on it
+            </Typography>
+            <Typography component="li" variant="body2">
+              Open projects still planned or pending
+            </Typography>
+            <Typography component="li" variant="body2">
+              Maintenance history and research notes for that vehicle
+            </Typography>
+          </Stack>
+        </Box>
+
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            What you can ask when signed in
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Symptoms to check next, whether a mod you already installed matters, what a maintenance
+            interval implies for this specific machine, or what is still open on a project list.
+          </Typography>
+        </Box>
+
+        {scope ? (
+          <Alert severity="info">
+            Right now you are viewing <strong>{scope.vehicleName}</strong>. In a signed-in garage,
+            the assistant would load that vehicle&apos;s year/make/model, projects, and history
+            before answering — without seeing any other vehicle.
+          </Alert>
+        ) : (
+          <Alert severity="info">
+            Open a vehicle in the demo garage to see which machine the assistant would scope to.
+          </Alert>
+        )}
+
+        <Typography variant="body2" color="text.secondary">
+          Demo mode is read-only, so questions are disabled here. Sign in to use it against your
+          own garage. Every answer is logged with token usage and cost, and daily limits keep spend
+          bounded.
+        </Typography>
+      </Stack>
+
+      <Divider />
+      <Stack sx={{ p: 2 }}>
+        <Button variant="contained" onClick={onSignIn}>
+          Sign in to ask questions
+        </Button>
+      </Stack>
+    </Stack>
+  )
+}
+
 export function MechanicAssistantDock() {
-  const { session, isDemoMode, user } = useAuth()
+  const { session, isDemoMode, user, exitDemoMode } = useAuth()
   const { scope } = useVehicleScope()
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
   const [conversationId, setConversationId] = useState(() => crypto.randomUUID())
   const [messages, setMessages] = useState<MechanicAssistantMessage[]>([])
@@ -108,15 +190,15 @@ export function MechanicAssistantDock() {
   }, [vehicleId])
 
   const refreshUsageToday = useCallback(() => {
-    if (!user) return
+    if (!user || isDemoMode) return
     readAssistantUsageToday(user.id)
       .then(setUsageToday)
       .catch(() => setUsageToday(null))
-  }, [user])
+  }, [user, isDemoMode])
 
   useEffect(() => {
-    if (isOpen) refreshUsageToday()
-  }, [isOpen, refreshUsageToday])
+    if (isOpen && !isDemoMode) refreshUsageToday()
+  }, [isOpen, isDemoMode, refreshUsageToday])
 
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -124,7 +206,7 @@ export function MechanicAssistantDock() {
 
   async function sendQuestion() {
     const trimmed = question.trim()
-    if (!trimmed || !vehicleId || isSending) return
+    if (!trimmed || !vehicleId || isSending || isDemoMode) return
 
     const nextMessages: MechanicAssistantMessage[] = [
       ...messages,
@@ -157,9 +239,9 @@ export function MechanicAssistantDock() {
     }
   }
 
-  // Signed-out and demo visitors never see the entry point. The Edge Function rejects
-  // them independently; hiding the control just keeps the limit from being discoverable.
-  if (isDemoMode || !session) return null
+  // Fully signed-out visitors still see nothing. Demo mode gets an explain-only panel so
+  // the feature is discoverable without spending model tokens.
+  if (!isDemoMode && !session) return null
 
   return (
     <>
@@ -178,74 +260,90 @@ export function MechanicAssistantDock() {
         onClose={() => setIsOpen(false)}
         slotProps={{ paper: { sx: { width: { xs: '100%', sm: 420 } } } }}
       >
-        <Stack sx={{ height: '100%' }}>
-          <Stack spacing={1} sx={{ p: 2 }}>
-            <Typography variant="h6">Mechanic assistant</Typography>
-            {scope ? (
-              <Chip label={`Scoped to ${scope.vehicleName}`} size="small" color="primary" variant="outlined" />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                Open a vehicle to ask about it. The assistant only ever sees the vehicle you are
-                viewing.
-              </Typography>
-            )}
-          </Stack>
-          <Divider />
-
-          <Stack spacing={1.5} sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
-            {messages.length === 0 && scope ? (
-              <Typography variant="body2" color="text.secondary">
-                Ask about a symptom, a maintenance interval, or what to check next on{' '}
-                {scope.vehicleName}.
-              </Typography>
-            ) : null}
-            {messages.map((message, index) => (
-              <MessageBubble key={`${message.role}-${index}`} message={message} />
-            ))}
-            {isSending ? (
-              <Typography variant="body2" color="text.secondary">
-                Thinking…
-              </Typography>
-            ) : null}
-            {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
-            <Box ref={transcriptEndRef} />
-          </Stack>
-
-          <Divider />
-          <UsageFooter
-            lastUsage={lastUsage}
-            conversationCostMicroUsd={conversationCostMicroUsd}
-            usageToday={usageToday}
+        {isDemoMode ? (
+          <DemoMechanicAssistantPanel
+            scope={scope}
+            onSignIn={() => {
+              setIsOpen(false)
+              exitDemoMode()
+              navigate('/login')
+            }}
           />
-          <Divider />
+        ) : (
+          <Stack sx={{ height: '100%' }}>
+            <Stack spacing={1} sx={{ p: 2 }}>
+              <Typography variant="h6">Mechanic assistant</Typography>
+              {scope ? (
+                <Chip
+                  label={`Scoped to ${scope.vehicleName}`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Open a vehicle to ask about it. The assistant only ever sees the vehicle you are
+                  viewing.
+                </Typography>
+              )}
+            </Stack>
+            <Divider />
 
-          <Stack direction="row" spacing={1} sx={{ p: 2, alignItems: 'flex-end' }}>
-            <TextField
-              fullWidth
-              size="small"
-              multiline
-              maxRows={4}
-              placeholder={scope ? `Ask about ${scope.vehicleName}…` : 'Open a vehicle first'}
-              disabled={!scope || isSending}
-              value={question}
-              slotProps={{ htmlInput: { maxLength: MAX_ASSISTANT_QUESTION_LENGTH } }}
-              onChange={(event) => setQuestion(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault()
-                  void sendQuestion()
-                }
-              }}
+            <Stack spacing={1.5} sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+              {messages.length === 0 && scope ? (
+                <Typography variant="body2" color="text.secondary">
+                  Ask about a symptom, a maintenance interval, or what to check next on{' '}
+                  {scope.vehicleName}.
+                </Typography>
+              ) : null}
+              {messages.map((message, index) => (
+                <MessageBubble key={`${message.role}-${index}`} message={message} />
+              ))}
+              {isSending ? (
+                <Typography variant="body2" color="text.secondary">
+                  Thinking…
+                </Typography>
+              ) : null}
+              {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
+              <Box ref={transcriptEndRef} />
+            </Stack>
+
+            <Divider />
+            <UsageFooter
+              lastUsage={lastUsage}
+              conversationCostMicroUsd={conversationCostMicroUsd}
+              usageToday={usageToday}
             />
-            <Button
-              variant="contained"
-              disabled={!scope || isSending || question.trim().length === 0}
-              onClick={() => void sendQuestion()}
-            >
-              Ask
-            </Button>
+            <Divider />
+
+            <Stack direction="row" spacing={1} sx={{ p: 2, alignItems: 'flex-end' }}>
+              <TextField
+                fullWidth
+                size="small"
+                multiline
+                maxRows={4}
+                placeholder={scope ? `Ask about ${scope.vehicleName}…` : 'Open a vehicle first'}
+                disabled={!scope || isSending}
+                value={question}
+                slotProps={{ htmlInput: { maxLength: MAX_ASSISTANT_QUESTION_LENGTH } }}
+                onChange={(event) => setQuestion(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    void sendQuestion()
+                  }
+                }}
+              />
+              <Button
+                variant="contained"
+                disabled={!scope || isSending || question.trim().length === 0}
+                onClick={() => void sendQuestion()}
+              >
+                Ask
+              </Button>
+            </Stack>
           </Stack>
-        </Stack>
+        )}
       </Drawer>
     </>
   )
