@@ -10,13 +10,9 @@ import {
   Typography,
 } from '@mui/material'
 import { useAuth } from '../../app/AuthProvider'
+import { groupItemsByVehicleType } from './groupVehiclesByType'
 import { listVehiclesForUser, resolveVehiclePhotoUrl } from './vehiclesApi'
-import {
-  formatVehicleKind,
-  VEHICLE_TYPE_SECTION_LABELS,
-  VEHICLE_TYPES,
-  type VehicleType,
-} from './vehicleTypes'
+import { formatVehicleKind, VEHICLE_TYPE_SECTION_LABELS } from './vehicleTypes'
 import { VehiclePhotoThumb } from './VehiclePhoto'
 import type { Vehicle } from '../../lib/database.types'
 import { PageLoadingState } from '../../shared/PageLoadingState'
@@ -84,16 +80,7 @@ export function VehicleListPage() {
     }
   }, [user])
 
-  const vehiclesByType = useMemo(() => {
-    const groups = Object.fromEntries(
-      VEHICLE_TYPES.map((type) => [type, [] as VehicleListItem[]]),
-    ) as Record<VehicleType, VehicleListItem[]>
-
-    for (const item of vehicleItems) {
-      groups[item.vehicle.vehicle_type].push(item)
-    }
-    return groups
-  }, [vehicleItems])
+  const vehicleGroups = useMemo(() => groupItemsByVehicleType(vehicleItems), [vehicleItems])
 
   if (isLoading) return <PageLoadingState label="Loading vehicles…" />
 
@@ -118,22 +105,18 @@ export function VehicleListPage() {
         <Typography color="text.secondary">Your fleet is empty. Add a vehicle to get started.</Typography>
       ) : (
         <Stack spacing={3}>
-          {VEHICLE_TYPES.map((type) => {
-            const items = vehiclesByType[type]
-            if (items.length === 0) return null
-            return (
-              <Box key={type} component="section">
-                <Typography variant="h2" sx={{ mb: 1.5 }}>
-                  {VEHICLE_TYPE_SECTION_LABELS[type]}
-                </Typography>
-                <Stack spacing={1.5}>
-                  {items.map((item) => (
-                    <VehicleListCard key={item.vehicle.id} {...item} />
-                  ))}
-                </Stack>
-              </Box>
-            )
-          })}
+          {vehicleGroups.map(({ type, items }) => (
+            <Box key={type} component="section">
+              <Typography variant="h2" sx={{ mb: 1.5 }}>
+                {VEHICLE_TYPE_SECTION_LABELS[type]}
+              </Typography>
+              <Stack spacing={1.5}>
+                {items.map((item) => (
+                  <VehicleListCard key={item.vehicle.id} {...item} />
+                ))}
+              </Stack>
+            </Box>
+          ))}
         </Stack>
       )}
     </PagePanel>
